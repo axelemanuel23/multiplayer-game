@@ -1,0 +1,14 @@
+{
+  "name": "gnosia-lan",
+  "version": "0.1.0",
+  "description": "Juego de deducción social tipo Gnosia: pantalla común + celulares",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test/smoke.js"
+  },
+  "dependencies": {
+    "qrcode": "^1.5.4",
+    "ws": "^8.18.0"
+  }
+}
