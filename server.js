@@ -85,7 +85,7 @@ function createRoom() {
     code: newCode(), hostToken: token(), hostWs: null,
     players: new Map(), // id -> { id, name, token, ws, role, alive, investigation }
     phase: 'LOBBY', phaseEndsAt: null, timer: null, result: null,
-    votes: new Map(), night: null, last: Date.now(),
+    votes: new Map(), night: null, nights: 0, last: Date.now(),
   };
   rooms.set(room.code, room);
   return room;
@@ -127,8 +127,8 @@ function setPhase(room, phase, result = null) {
   if (ms) room.timer = setTimeout(() => advance(room), ms);
   if (phase === 'VOTE') room.votes = new Map();
   if (phase === 'NIGHT') {
+    room.nights += 1;
     room.night = { acted: new Set(), attacks: new Map(), protected: new Set() };
-    for (const p of room.players.values()) p.investigation = null;
   }
   broadcast(room);
   if (phase === 'NIGHT') for (const p of aliveList(room)) sendNight(room, p);
@@ -191,7 +191,8 @@ function assignRoles(room) {
   const deck = [];
   for (const [role, n] of Object.entries(ROLE_TABLE[ps.length])) for (let i = 0; i < n; i++) deck.push(role);
   shuffle(deck);
-  ps.forEach((p, i) => { p.role = deck[i]; p.alive = true; p.investigation = null; });
+  room.nights = 0;
+  ps.forEach((p, i) => { p.role = deck[i]; p.alive = true; p.reports = []; });
 }
 
 // Información PRIVADA: solo se envía al dueño.
@@ -203,6 +204,13 @@ function sendRole(room, p) {
   send(p.ws, msg);
 }
 
+// Informe privado: queda guardado en el servidor (se recupera al reconectar) y se envía a su dueño.
+function addReport(room, p, entry) {
+  const report = { night: room.nights, ...entry };
+  p.reports.push(report);
+  send(p.ws, { t: 'you:report', report });
+}
+
 // Todos los vivos reciben una pantalla de noche (los Tripulantes, una acción señuelo) para no delatar roles.
 function sendNight(room, p) {
   const others = aliveList(room).filter((o) => o.id !== p.id);
@@ -210,8 +218,7 @@ function sendNight(room, p) {
   const targets = p.role === 'gnosia' ? others.filter((o) => o.role !== 'gnosia')
     : p.role === 'engineer' || p.role === 'guardian' ? others
       : p.role === 'doctor' ? dead : [];
-  send(p.ws, { t: 'night:prompt', role: p.role, targets: targets.map((o) => ({ id: o.id, name: o.name })), acted: room.night.acted.has(p.id) });
-  if (p.investigation) send(p.ws, { t: 'night:result', ...p.investigation });
+  send(p.ws, { t: 'night:prompt', role: p.role, targets: targets.map((o) => ({ id: o.id, name: o.name })), acted: room.night.acted.has(p.id), night: room.nights });
 }
 
 const whoAmI = (ws) => {
@@ -293,7 +300,8 @@ const handlers = {
     const room = hostRoom(ws);
     if (!room) return fail(ws, 'FORBIDDEN', 'Solo la pantalla común puede hacerlo.');
     if (room.phase !== 'GAME_OVER') return fail(ws, 'BAD_PHASE', 'La partida no terminó.');
-    for (const p of room.players.values()) { p.role = null; p.alive = true; p.investigation = null; }
+    for (const p of room.players.values()) { p.role = null; p.alive = true; p.reports = []; }
+    room.nights = 0;
     setPhase(room, 'LOBBY');
   },
 
@@ -322,19 +330,19 @@ const handlers = {
     if (p.role === 'gnosia') {
       if (!t || !t.alive || t.role === 'gnosia') return fail(ws, 'BAD_TARGET', 'Objetivo inválido.');
       room.night.attacks.set(p.id, t.id);
+      addReport(room, p, { kind: 'attack', name: t.name });
     } else if (p.role === 'engineer') {
       if (!t || !t.alive || t.id === p.id) return fail(ws, 'BAD_TARGET', 'Objetivo inválido.');
-      p.investigation = { name: t.name, isGnosia: t.role === 'gnosia' };
-      send(ws, { t: 'night:result', ...p.investigation });
+      addReport(room, p, { kind: 'investigate', name: t.name, isGnosia: t.role === 'gnosia' });
     } else if (p.role === 'guardian') {
       if (!t || !t.alive || t.id === p.id) return fail(ws, 'BAD_TARGET', 'Objetivo inválido.');
       room.night.protected.add(t.id);
+      addReport(room, p, { kind: 'protect', name: t.name });
     } else if (p.role === 'doctor') {
       // El Doctor examina a un eliminado; si todavía no hay ninguno, la acción es un señuelo.
       if ([...room.players.values()].some((o) => !o.alive)) {
         if (!t || t.alive) return fail(ws, 'BAD_TARGET', 'Objetivo inválido.');
-        p.investigation = { name: t.name, isGnosia: t.role === 'gnosia', past: true };
-        send(ws, { t: 'night:result', ...p.investigation });
+        addReport(room, p, { kind: 'examine', name: t.name, isGnosia: t.role === 'gnosia' });
       }
     }
     room.night.acted.add(p.id);
@@ -351,7 +359,7 @@ const handlers = {
     if (!name) return fail(ws, 'BAD_NAME', 'Escribe un nombre.');
     const taken = [...room.players.values()].some((p) => p.name.toLowerCase() === name.toLowerCase());
     if (taken) return fail(ws, 'NAME_TAKEN', 'Ese nombre ya está en uso.');
-    const p = { id: crypto.randomBytes(4).toString('hex'), name, token: token(), ws: null, role: null, alive: true };
+    const p = { id: crypto.randomBytes(4).toString('hex'), name, token: token(), ws: null, role: null, alive: true, reports: [] };
     room.players.set(p.id, p);
     room.last = Date.now();
     attachPlayer(ws, room, p);
@@ -366,6 +374,7 @@ const handlers = {
     attachPlayer(ws, room, p);
     send(ws, { t: 'player:joined', code: room.code, playerId: p.id, token: p.token, name: p.name });
     if (p.role) sendRole(room, p);
+    if (p.reports.length) send(ws, { t: 'you:reports', reports: p.reports });
     broadcast(room);
     if (room.phase === 'NIGHT' && p.alive) sendNight(room, p);
     if (room.phase === 'VOTE' && room.votes.has(p.id)) send(ws, { t: 'vote:ack', target: room.votes.get(p.id) });
