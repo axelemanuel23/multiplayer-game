@@ -50,7 +50,7 @@
     const urlCode = (new URLSearchParams(location.search).get('sala') || '').toUpperCase();
     let session = JSON.parse(localStorage.getItem(KEY) || 'null');
     if (session && urlCode && session.code !== urlCode) session = null;
-    let state = null, roleMsg = null, myVote = null, night = null, nightActed = false, investigation = null;
+    let state = null, roleMsg = null, myVote = null, night = null, nightActed = false, reports = [];
 
     $('#code-in').value = urlCode;
 
@@ -70,8 +70,10 @@
           night = m; nightActed = m.acted; renderAction();
         } else if (m.t === 'night:ack') {
           nightActed = true; renderAction();
-        } else if (m.t === 'night:result') {
-          investigation = m; renderAction();
+        } else if (m.t === 'you:report') {
+          reports.push(m.report); renderAction(); renderRole(false);
+        } else if (m.t === 'you:reports') {
+          reports = m.reports; renderRole(false);
         } else if (m.t === 'error') {
           if (m.code === 'SESSION_LOST') { localStorage.removeItem(KEY); session = null; state = null; render(); }
           else $('#join-err').textContent = m.message;
@@ -92,9 +94,9 @@
     function render() {
       if (!session || !state) return show('join');
       if (state.phase !== 'VOTE') myVote = null;
-      if (state.phase !== 'NIGHT') { night = null; nightActed = false; investigation = null; }
+      if (state.phase !== 'NIGHT') { night = null; nightActed = false; }
       if (state.phase === 'LOBBY') {
-        roleMsg = null;
+        roleMsg = null; reports = [];
         show('lobby');
         Gnosia.renderRoster($('#roster-lobby'), state.players, session.playerId);
       } else {
@@ -135,7 +137,8 @@
       } else if (state.phase === 'NIGHT' && night) {
         if (nightActed) {
           add('h2', '', 'Listo. Espera al amanecer.');
-          if (investigation) add('p', 'verdict', investigation.name + (investigation.past ? ' era ' : ' es ') + (investigation.isGnosia ? 'Gnosia.' : 'humano.'));
+          const rep = reports.filter((x) => x.night === night.night && (x.kind === 'investigate' || x.kind === 'examine')).pop();
+          if (rep) add('p', 'verdict', Gnosia.describeReport(rep).replace(/^Noche \d+: /, ''));
         } else if (night.targets.length) {
           const Q = { gnosia: '¿A quién eliminas esta noche?', engineer: '¿A quién investigas?', guardian: '¿A quién proteges?', doctor: '¿A qué eliminado examinas?' };
           add('h2', '', Q[night.role]);
@@ -157,11 +160,12 @@
       card.replaceChildren();
       const line = (cls, text) => { const p = document.createElement('p'); if (cls) p.className = cls; p.textContent = text; card.append(p); };
       if (!roleMsg) return line('mute', 'Esperando tu rol…');
-      if (!shown) return line('mute', 'Mantén presionado para ver tu rol');
+      if (!shown) return line('mute', 'Mantén presionado para ver tu rol' + (reports.length ? ' e informes (' + reports.length + ')' : ''));
       const r = Gnosia.ROLE[roleMsg.role];
       line('role-name', r.name);
       line('', r.hint);
       if (roleMsg.allies && roleMsg.allies.length) line('mute', 'Tus aliados: ' + roleMsg.allies.join(', '));
+      if (reports.length) { line('mute', 'Informes'); reports.forEach((r) => line('', Gnosia.describeReport(r))); }
     }
     const hold = (e) => { e.preventDefault(); renderRole(true); };
     const release = () => renderRole(false);
