@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gnosia · Pantalla común</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div id="conn" class="conn" role="status">Sin conexión con el servidor. Reintentando…</div>
+  <main class="host">
+    <section id="lobby" class="stack" style="gap:4vh">
+      <div class="join">
+        <div id="qr" class="qr" aria-label="Código QR para unirse"></div>
+        <div class="stack">
+          <p class="mute">Escanea el QR o entra desde el celular a</p>
+          <p id="url" class="url"></p>
+          <p class="mute">Código de sala</p>
+          <p id="code" class="code">····</p>
+        </div>
+      </div>
+      <div class="stack">
+        <h2 id="count">Jugadores conectados</h2>
+        <ul id="roster-lobby" class="roster"></ul>
+      </div>
+      <div class="actions">
+        <button id="start" class="primary" disabled>Iniciar partida</button>
+        <p id="msg" class="error" role="alert"></p>
+      </div>
+    </section>
+
+    <section id="game" class="stack" hidden>
+      <p id="phase" class="phase-name"></p>
+      <p id="timer" class="timer"></p>
+      <ul id="roster-game" class="roster"></ul>
+    </section>
+  </main>
+
+  <script src="/common.js"></script>
+  <script>
+    const $ = (s) => document.querySelector(s);
+    const KEY = 'gnosia:host';
+    let state = null;
+
+    const api = Gnosia.connect({
+      onOpen(api) {
+        const s = JSON.parse(localStorage.getItem(KEY) || 'null');
+        api.send(s ? { t: 'host:resume', code: s.code, hostToken: s.hostToken } : { t: 'host:create' });
+      },
+      onMessage(m, api) {
+        if (m.t === 'host:created') {
+          localStorage.setItem(KEY, JSON.stringify({ code: m.code, hostToken: m.hostToken }));
+          $('#code').textContent = m.code;
+          $('#url').textContent = m.joinUrl;
+          $('#qr').innerHTML = m.qr; // SVG generado por nuestro servidor
+        } else if (m.t === 'state') {
+          state = m; Gnosia.syncClock(m); render();
+        } else if (m.t === 'error') {
+          if (m.code === 'ROOM_NOT_FOUND') { localStorage.removeItem(KEY); api.send({ t: 'host:create' }); }
+          else $('#msg').textContent = m.message;
+        }
+      },
+    });
+
+    $('#start').addEventListener('click', () => { $('#msg').textContent = ''; api.send({ t: 'host:start' }); });
+
+    function render() {
+      const inLobby = state.phase === 'LOBBY';
+      $('#lobby').hidden = !inLobby;
+      $('#game').hidden = inLobby;
+      if (inLobby) {
+        const n = state.players.length;
+        $('#count').textContent = n + (n === 1 ? ' jugador conectado' : ' jugadores conectados');
+        Gnosia.renderRoster($('#roster-lobby'), state.players);
+        $('#start').disabled = n < state.min;
+        if (n < state.min) $('#msg').textContent = 'Faltan ' + (state.min - n) + ' jugadores como mínimo.';
+        else $('#msg').textContent = '';
+      } else {
+        $('#phase').textContent = Gnosia.PHASE_LABEL[state.phase] || state.phase;
+        Gnosia.renderRoster($('#roster-game'), state.players);
+      }
+      tick();
+    }
+
+    function tick() {
+      if (!state || state.phase === 'LOBBY' || !state.phaseEndsAt) { $('#timer').textContent = ''; return; }
+      $('#timer').textContent = Gnosia.fmtTime(Gnosia.remaining(state.phaseEndsAt));
+    }
+    setInterval(tick, 250);
+  </script>
+</body>
+</html>
