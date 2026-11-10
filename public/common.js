@@ -18,6 +18,8 @@
   const ROLE = {
     gnosia: { name: 'Gnosia', hint: 'Elimina tripulantes sin que te descubran.' },
     engineer: { name: 'Ingeniero', hint: 'Cada noche podrás investigar a un jugador.' },
+    guardian: { name: 'Guardián', hint: 'Cada noche puedes proteger a un jugador del ataque.' },
+    doctor: { name: 'Doctor', hint: 'Cada noche puedes examinar a un eliminado.' },
     crew: { name: 'Tripulante', hint: 'Debate y vota para encontrar a los Gnosia.' },
   };
 
