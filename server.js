@@ -25,9 +25,11 @@ const ROLE_TABLE = {
   12: { gnosia: 3, engineer: 1, crew: 8 },
 };
 
-// Flujo de fases. La duración null = sin temporizador (fin del esqueleto por ahora).
-const FLOW = ['ROLE_REVEAL', 'DEBATE', 'VOTE'];
-const DURATION = { ROLE_REVEAL: 15000, DEBATE: 120000, VOTE: null };
+// Duración de cada fase (null = sin temporizador).
+const DURATION = {
+  ROLE_REVEAL: 15000, DEBATE: 120000, VOTE: 45000, VOTE_RESULT: 10000,
+  NIGHT: 40000, DAWN: 10000, GAME_OVER: null,
+};
 
 const rooms = new Map();
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
@@ -60,8 +62,19 @@ function lanIp() {
   return 'localhost';
 }
 
-async function joinInfo(room) {
-  const base = PUBLIC_URL || `http://${lanIp()}:${PORT}`;
+// Dirección base para el QR: PUBLIC_URL si existe; si no, la misma dirección con la que se abrió la pantalla común.
+function baseUrl(ws) {
+  if (PUBLIC_URL) return PUBLIC_URL.replace(/\/$/, '');
+  const h = (ws && ws.req && ws.req.headers) || {};
+  const host = String(h['x-forwarded-host'] || h.host || '').split(',')[0].trim();
+  const proto = String(h['x-forwarded-proto'] || 'http').split(',')[0].trim() === 'https' ? 'https' : 'http';
+  const local = /^(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/.test(host);
+  if (!host || local || !/^[a-z0-9.\-:]+$/i.test(host)) return `http://${lanIp()}:${PORT}`;
+  return `${proto}://${host}`;
+}
+
+async function joinInfo(room, ws) {
+  const base = baseUrl(ws);
   const joinUrl = `${base}/play?sala=${room.code}`;
   return { joinUrl, qr: await QRCode.toString(joinUrl, { type: 'svg', margin: 1 }) };
 }
@@ -69,32 +82,33 @@ async function joinInfo(room) {
 // ---------- estado de sala ----------
 function createRoom() {
   const room = {
-    code: newCode(),
-    hostToken: token(),
-    hostWs: null,
-    players: new Map(), // id -> { id, name, token, ws, role, alive }
-    phase: 'LOBBY',
-    phaseEndsAt: null,
-    timer: null,
-    last: Date.now(),
+    code: newCode(), hostToken: token(), hostWs: null,
+    players: new Map(), // id -> { id, name, token, ws, role, alive, investigation }
+    phase: 'LOBBY', phaseEndsAt: null, timer: null, result: null,
+    votes: new Map(), night: null, last: Date.now(),
   };
   rooms.set(room.code, room);
   return room;
 }
 
-// Estado PÚBLICO: es lo único que ven la pantalla común y los demás jugadores. Nunca incluye roles.
+const aliveList = (room) => [...room.players.values()].filter((p) => p.alive);
+
+function winner(room) {
+  const a = aliveList(room);
+  const g = a.filter((p) => p.role === 'gnosia').length;
+  if (g === 0) return 'humans';
+  if (g >= a.length - g) return 'gnosia';
+  return null;
+}
+
+// Estado PÚBLICO: es lo único que ven la pantalla común y los demás jugadores.
+// Los roles solo aparecen al terminar la partida (result.kind === 'end').
 function publicState(room) {
   return {
-    t: 'state',
-    code: room.code,
-    phase: room.phase,
-    phaseEndsAt: room.phaseEndsAt,
-    now: Date.now(),
-    min: MIN_PLAYERS,
-    max: MAX_PLAYERS,
-    players: [...room.players.values()].map((p) => ({
-      id: p.id, name: p.name, connected: !!p.ws, alive: p.alive,
-    })),
+    t: 'state', code: room.code, phase: room.phase, phaseEndsAt: room.phaseEndsAt, now: Date.now(),
+    min: MIN_PLAYERS, max: MAX_PLAYERS, result: room.result,
+    progress: room.phase === 'VOTE' ? { done: room.votes.size, total: aliveList(room).length } : null,
+    players: [...room.players.values()].map((p) => ({ id: p.id, name: p.name, connected: !!p.ws, alive: p.alive })),
   };
 }
 
@@ -104,31 +118,83 @@ function broadcast(room) {
   for (const p of room.players.values()) send(p.ws, s);
 }
 
-function setPhase(room, phase) {
+function setPhase(room, phase, result = null) {
   clearTimeout(room.timer);
   room.phase = phase;
+  room.result = result;
   const ms = DURATION[phase];
   room.phaseEndsAt = ms ? Date.now() + ms : null;
   if (ms) room.timer = setTimeout(() => advance(room), ms);
+  if (phase === 'VOTE') room.votes = new Map();
+  if (phase === 'NIGHT') {
+    room.night = { acted: new Set(), attacks: new Map() };
+    for (const p of room.players.values()) p.investigation = null;
+  }
   broadcast(room);
+  if (phase === 'NIGHT') for (const p of aliveList(room)) sendNight(room, p);
 }
 
 function advance(room) {
-  const next = FLOW[FLOW.indexOf(room.phase) + 1];
-  if (next) setPhase(room, next);
+  switch (room.phase) {
+    case 'ROLE_REVEAL': return setPhase(room, 'DEBATE');
+    case 'DEBATE': return setPhase(room, 'VOTE');
+    case 'VOTE': return resolveVote(room);
+    case 'VOTE_RESULT': { const w = winner(room); return w ? endGame(room, w) : setPhase(room, 'NIGHT'); }
+    case 'NIGHT': return resolveNight(room);
+    case 'DAWN': { const w = winner(room); return w ? endGame(room, w) : setPhase(room, 'DEBATE'); }
+    default: return undefined;
+  }
+}
+
+// Gana la mayoría simple; empate o sin votos = nadie es eliminado.
+function resolveVote(room) {
+  const tally = new Map();
+  for (const [voterId, targetId] of room.votes) {
+    if (targetId === 'skip') continue;
+    if (!tally.has(targetId)) tally.set(targetId, []);
+    tally.get(targetId).push(room.players.get(voterId).name);
+  }
+  const rows = [...tally].map(([id, voters]) => ({ id, name: room.players.get(id).name, voters }))
+    .sort((a, b) => b.voters.length - a.voters.length);
+  const abstained = aliveList(room).length - [...room.votes.values()].filter((t) => t !== 'skip').length;
+  let eliminated = null;
+  if (rows.length && (rows.length === 1 || rows[0].voters.length > rows[1].voters.length)) {
+    eliminated = rows[0].name;
+    room.players.get(rows[0].id).alive = false;
+  }
+  setPhase(room, 'VOTE_RESULT', { kind: 'vote', rows: rows.map(({ name, voters }) => ({ name, voters })), eliminated, abstained });
+}
+
+// Los Gnosia eligen víctima (pluralidad; empate al azar). Sin elección = nadie cae.
+function resolveNight(room) {
+  const counts = new Map();
+  for (const t of room.night.attacks.values()) counts.set(t, (counts.get(t) || 0) + 1);
+  let victim = null;
+  if (counts.size) {
+    const max = Math.max(...counts.values());
+    const top = [...counts].filter(([, n]) => n === max).map(([id]) => id);
+    victim = room.players.get(top[crypto.randomInt(top.length)]);
+    victim.alive = false;
+  }
+  setPhase(room, 'DAWN', { kind: 'dawn', victim: victim ? victim.name : null });
+}
+
+function endGame(room, w) {
+  setPhase(room, 'GAME_OVER', {
+    kind: 'end', winner: w,
+    roles: [...room.players.values()].map((p) => ({ name: p.name, role: p.role, alive: p.alive })),
+  });
 }
 
 function assignRoles(room) {
   const ps = [...room.players.values()];
   const deck = [];
-  for (const [role, n] of Object.entries(ROLE_TABLE[ps.length])) {
-    for (let i = 0; i < n; i++) deck.push(role);
-  }
+  for (const [role, n] of Object.entries(ROLE_TABLE[ps.length])) for (let i = 0; i < n; i++) deck.push(role);
   shuffle(deck);
-  ps.forEach((p, i) => { p.role = deck[i]; p.alive = true; });
+  ps.forEach((p, i) => { p.role = deck[i]; p.alive = true; p.investigation = null; });
 }
 
-// Información PRIVADA: solo se envía al dueño del rol.
+// Información PRIVADA: solo se envía al dueño.
 function sendRole(room, p) {
   const msg = { t: 'you:role', role: p.role };
   if (p.role === 'gnosia') {
@@ -136,6 +202,21 @@ function sendRole(room, p) {
   }
   send(p.ws, msg);
 }
+
+// Todos los vivos reciben una pantalla de noche (los Tripulantes, una acción señuelo) para no delatar roles.
+function sendNight(room, p) {
+  const others = aliveList(room).filter((o) => o.id !== p.id);
+  const targets = p.role === 'gnosia' ? others.filter((o) => o.role !== 'gnosia') : p.role === 'engineer' ? others : [];
+  send(p.ws, { t: 'night:prompt', role: p.role, targets: targets.map((o) => ({ id: o.id, name: o.name })), acted: room.night.acted.has(p.id) });
+  if (p.investigation) send(p.ws, { t: 'night:result', ...p.investigation });
+}
+
+const whoAmI = (ws) => {
+  const c = ws.ctx;
+  if (!c || c.kind !== 'player') return {};
+  return { room: c.room, p: c.room.players.get(c.playerId) };
+};
+const hostRoom = (ws) => (ws.ctx && ws.ctx.kind === 'host' ? ws.ctx.room : null);
 
 // ---------- conexiones ----------
 function attachHost(ws, room) {
@@ -164,7 +245,7 @@ const handlers = {
   async 'host:create'(ws) {
     const room = createRoom();
     attachHost(ws, room);
-    send(ws, { t: 'host:created', code: room.code, hostToken: room.hostToken, ...(await joinInfo(room)) });
+    send(ws, { t: 'host:created', code: room.code, hostToken: room.hostToken, ...(await joinInfo(room, ws)) });
     send(ws, publicState(room));
   },
 
@@ -172,7 +253,7 @@ const handlers = {
     const room = rooms.get(String(m.code || '').toUpperCase());
     if (!room || room.hostToken !== m.hostToken) return fail(ws, 'ROOM_NOT_FOUND', 'La sala ya no existe.');
     attachHost(ws, room);
-    send(ws, { t: 'host:created', code: room.code, hostToken: room.hostToken, ...(await joinInfo(room)) });
+    send(ws, { t: 'host:created', code: room.code, hostToken: room.hostToken, ...(await joinInfo(room, ws)) });
     send(ws, publicState(room));
   },
 
@@ -184,7 +265,56 @@ const handlers = {
     if (room.players.size < MIN_PLAYERS) return fail(ws, 'NOT_ENOUGH', `Hacen falta al menos ${MIN_PLAYERS} jugadores.`);
     assignRoles(room);
     for (const p of room.players.values()) sendRole(room, p);
-    setPhase(room, FLOW[0]);
+    setPhase(room, 'ROLE_REVEAL');
+  },
+
+  'host:skip'(ws) {
+    const room = hostRoom(ws);
+    if (!room) return fail(ws, 'FORBIDDEN', 'Solo la pantalla común puede hacerlo.');
+    if (room.phase !== 'LOBBY' && room.phase !== 'GAME_OVER') advance(room);
+  },
+
+  'host:reset'(ws) {
+    const room = hostRoom(ws);
+    if (!room) return fail(ws, 'FORBIDDEN', 'Solo la pantalla común puede hacerlo.');
+    if (room.phase !== 'GAME_OVER') return fail(ws, 'BAD_PHASE', 'La partida no terminó.');
+    for (const p of room.players.values()) { p.role = null; p.alive = true; p.investigation = null; }
+    setPhase(room, 'LOBBY');
+  },
+
+  'player:vote'(ws, m) {
+    const { room, p } = whoAmI(ws);
+    if (!p) return fail(ws, 'FORBIDDEN', 'No estás en una partida.');
+    if (room.phase !== 'VOTE') return fail(ws, 'BAD_PHASE', 'No es momento de votar.');
+    if (!p.alive) return fail(ws, 'DEAD', 'Estás fuera de la partida.');
+    if (m.target !== 'skip') {
+      const t = room.players.get(m.target);
+      if (!t || !t.alive || t.id === p.id) return fail(ws, 'BAD_TARGET', 'Voto inválido.');
+    }
+    room.votes.set(p.id, m.target);
+    send(ws, { t: 'vote:ack', target: m.target });
+    if (room.votes.size >= aliveList(room).length) return advance(room); // todos votaron: se cierra antes
+    broadcast(room);
+  },
+
+  'player:night'(ws, m) {
+    const { room, p } = whoAmI(ws);
+    if (!p) return fail(ws, 'FORBIDDEN', 'No estás en una partida.');
+    if (room.phase !== 'NIGHT') return fail(ws, 'BAD_PHASE', 'No es de noche.');
+    if (!p.alive) return fail(ws, 'DEAD', 'Estás fuera de la partida.');
+    if (room.night.acted.has(p.id)) return fail(ws, 'ALREADY_ACTED', 'Ya elegiste esta noche.');
+    const t = room.players.get(m.target);
+    if (p.role === 'gnosia') {
+      if (!t || !t.alive || t.role === 'gnosia') return fail(ws, 'BAD_TARGET', 'Objetivo inválido.');
+      room.night.attacks.set(p.id, t.id);
+    } else if (p.role === 'engineer') {
+      if (!t || !t.alive || t.id === p.id) return fail(ws, 'BAD_TARGET', 'Objetivo inválido.');
+      p.investigation = { name: t.name, isGnosia: t.role === 'gnosia' };
+      send(ws, { t: 'night:result', ...p.investigation });
+    }
+    room.night.acted.add(p.id);
+    send(ws, { t: 'night:ack' });
+    if (room.night.acted.size >= aliveList(room).length) advance(room); // todos actuaron: amanece antes
   },
 
   'player:join'(ws, m) {
@@ -212,6 +342,8 @@ const handlers = {
     send(ws, { t: 'player:joined', code: room.code, playerId: p.id, token: p.token, name: p.name });
     if (p.role) sendRole(room, p);
     broadcast(room);
+    if (room.phase === 'NIGHT' && p.alive) sendNight(room, p);
+    if (room.phase === 'VOTE' && room.votes.has(p.id)) send(ws, { t: 'vote:ack', target: room.votes.get(p.id) });
   },
 };
 
@@ -237,7 +369,8 @@ const server = http.createServer((req, res) => {
 
 const wss = new WebSocketServer({ server, path: '/ws', maxPayload: 4096 });
 
-wss.on('connection', (ws) => {
+wss.on('connection', (ws, req) => {
+  ws.req = req;
   ws.isAlive = true;
   ws.ctx = null;
   ws.on('pong', () => { ws.isAlive = true; });
