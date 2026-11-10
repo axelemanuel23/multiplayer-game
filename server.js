@@ -16,13 +16,13 @@ const MAX_PLAYERS = 12;
 const ROLE_TABLE = {
   4: { gnosia: 1, engineer: 1, crew: 2 },
   5: { gnosia: 1, engineer: 1, crew: 3 },
-  6: { gnosia: 1, engineer: 1, crew: 4 },
-  7: { gnosia: 2, engineer: 1, crew: 4 },
-  8: { gnosia: 2, engineer: 1, crew: 5 },
-  9: { gnosia: 2, engineer: 1, crew: 6 },
-  10: { gnosia: 3, engineer: 1, crew: 6 },
-  11: { gnosia: 3, engineer: 1, crew: 7 },
-  12: { gnosia: 3, engineer: 1, crew: 8 },
+  6: { gnosia: 1, engineer: 1, guardian: 1, crew: 3 },
+  7: { gnosia: 2, engineer: 1, guardian: 1, crew: 3 },
+  8: { gnosia: 2, engineer: 1, guardian: 1, doctor: 1, crew: 3 },
+  9: { gnosia: 2, engineer: 1, guardian: 1, doctor: 1, crew: 4 },
+  10: { gnosia: 3, engineer: 1, guardian: 1, doctor: 1, crew: 4 },
+  11: { gnosia: 3, engineer: 1, guardian: 1, doctor: 1, crew: 5 },
+  12: { gnosia: 3, engineer: 1, guardian: 1, doctor: 1, crew: 6 },
 };
 
 // Duración de cada fase (null = sin temporizador).
@@ -127,7 +127,7 @@ function setPhase(room, phase, result = null) {
   if (ms) room.timer = setTimeout(() => advance(room), ms);
   if (phase === 'VOTE') room.votes = new Map();
   if (phase === 'NIGHT') {
-    room.night = { acted: new Set(), attacks: new Map() };
+    room.night = { acted: new Set(), attacks: new Map(), protected: new Set() };
     for (const p of room.players.values()) p.investigation = null;
   }
   broadcast(room);
@@ -173,8 +173,8 @@ function resolveNight(room) {
   if (counts.size) {
     const max = Math.max(...counts.values());
     const top = [...counts].filter(([, n]) => n === max).map(([id]) => id);
-    victim = room.players.get(top[crypto.randomInt(top.length)]);
-    victim.alive = false;
+    const target = room.players.get(top[crypto.randomInt(top.length)]);
+    if (!room.night.protected.has(target.id)) { victim = target; victim.alive = false; } // el Guardián frustra el ataque
   }
   setPhase(room, 'DAWN', { kind: 'dawn', victim: victim ? victim.name : null });
 }
@@ -206,7 +206,10 @@ function sendRole(room, p) {
 // Todos los vivos reciben una pantalla de noche (los Tripulantes, una acción señuelo) para no delatar roles.
 function sendNight(room, p) {
   const others = aliveList(room).filter((o) => o.id !== p.id);
-  const targets = p.role === 'gnosia' ? others.filter((o) => o.role !== 'gnosia') : p.role === 'engineer' ? others : [];
+  const dead = [...room.players.values()].filter((o) => !o.alive);
+  const targets = p.role === 'gnosia' ? others.filter((o) => o.role !== 'gnosia')
+    : p.role === 'engineer' || p.role === 'guardian' ? others
+      : p.role === 'doctor' ? dead : [];
   send(p.ws, { t: 'night:prompt', role: p.role, targets: targets.map((o) => ({ id: o.id, name: o.name })), acted: room.night.acted.has(p.id) });
   if (p.investigation) send(p.ws, { t: 'night:result', ...p.investigation });
 }
@@ -216,6 +219,18 @@ const whoAmI = (ws) => {
   if (!c || c.kind !== 'player') return {};
   return { room: c.room, p: c.room.players.get(c.playerId) };
 };
+// ¿Ya votaron/actuaron todos los vivos que siguen conectados? (un celular caído no bloquea la fase)
+function allIn(room) {
+  const need = aliveList(room).filter((p) => p.ws);
+  if (!need.length) return false;
+  const done = room.phase === 'VOTE' ? (p) => room.votes.has(p.id) : (p) => room.night.acted.has(p.id);
+  return need.every(done);
+}
+function closeIfAllIn(room) {
+  if ((room.phase === 'VOTE' || room.phase === 'NIGHT') && allIn(room)) { advance(room); return true; }
+  return false;
+}
+
 const hostRoom = (ws) => (ws.ctx && ws.ctx.kind === 'host' ? ws.ctx.room : null);
 
 // ---------- conexiones ----------
@@ -237,7 +252,7 @@ function detach(ws) {
   if (c.kind === 'host' && c.room.hostWs === ws) c.room.hostWs = null;
   if (c.kind === 'player') {
     const p = c.room.players.get(c.playerId);
-    if (p && p.ws === ws) { p.ws = null; broadcast(c.room); }
+    if (p && p.ws === ws) { p.ws = null; if (!closeIfAllIn(c.room)) broadcast(c.room); }
   }
 }
 
@@ -293,7 +308,7 @@ const handlers = {
     }
     room.votes.set(p.id, m.target);
     send(ws, { t: 'vote:ack', target: m.target });
-    if (room.votes.size >= aliveList(room).length) return advance(room); // todos votaron: se cierra antes
+    if (allIn(room)) return advance(room); // todos votaron: se cierra antes
     broadcast(room);
   },
 
@@ -311,10 +326,20 @@ const handlers = {
       if (!t || !t.alive || t.id === p.id) return fail(ws, 'BAD_TARGET', 'Objetivo inválido.');
       p.investigation = { name: t.name, isGnosia: t.role === 'gnosia' };
       send(ws, { t: 'night:result', ...p.investigation });
+    } else if (p.role === 'guardian') {
+      if (!t || !t.alive || t.id === p.id) return fail(ws, 'BAD_TARGET', 'Objetivo inválido.');
+      room.night.protected.add(t.id);
+    } else if (p.role === 'doctor') {
+      // El Doctor examina a un eliminado; si todavía no hay ninguno, la acción es un señuelo.
+      if ([...room.players.values()].some((o) => !o.alive)) {
+        if (!t || t.alive) return fail(ws, 'BAD_TARGET', 'Objetivo inválido.');
+        p.investigation = { name: t.name, isGnosia: t.role === 'gnosia', past: true };
+        send(ws, { t: 'night:result', ...p.investigation });
+      }
     }
     room.night.acted.add(p.id);
     send(ws, { t: 'night:ack' });
-    if (room.night.acted.size >= aliveList(room).length) advance(room); // todos actuaron: amanece antes
+    if (allIn(room)) advance(room); // todos actuaron: amanece antes
   },
 
   'player:join'(ws, m) {
