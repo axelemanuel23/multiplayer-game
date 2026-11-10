@@ -76,4 +76,13 @@ label { display: block; margin-bottom: 6px; color: var(--mute); font-size: 15px;
 .rolecard.shown.gnosia { border-color: var(--alarm); }
 .rolecard.shown.gnosia .role-name { color: var(--alarm); }
 
+button.selected { background: var(--signal); border-color: var(--signal); color: #1b1405; }
+.choices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.choices button:last-child:nth-child(odd) { grid-column: 1 / -1; }
+.result { display: flex; flex-direction: column; gap: 6px; }
+.result p { margin: 0; }
+.verdict { font-size: 1.5rem; font-weight: 800; color: var(--signal); }
+.host .result p { font-size: 1.4rem; }
+.big { font-size: 1.4rem; }
+
 @media (prefers-reduced-motion: reduce) { .conn { transition: none; } }
