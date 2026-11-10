@@ -32,7 +32,13 @@
     <section id="game" class="stack" hidden>
       <p id="phase" class="phase-name"></p>
       <p id="timer" class="timer"></p>
+      <p id="hint" class="mute big"></p>
+      <div id="result" class="result"></div>
       <ul id="roster-game" class="roster"></ul>
+      <div class="actions">
+        <button id="skip">Saltar fase</button>
+        <button id="reset" class="primary" hidden>Nueva partida</button>
+      </div>
     </section>
   </main>
 
@@ -62,6 +68,8 @@
       },
     });
 
+    $('#skip').addEventListener('click', () => api.send({ t: 'host:skip' }));
+    $('#reset').addEventListener('click', () => api.send({ t: 'host:reset' }));
     $('#start').addEventListener('click', () => { $('#msg').textContent = ''; api.send({ t: 'host:start' }); });
 
     function render() {
@@ -78,6 +86,12 @@
       } else {
         $('#phase').textContent = Gnosia.PHASE_LABEL[state.phase] || state.phase;
         Gnosia.renderRoster($('#roster-game'), state.players);
+        const over = state.phase === 'GAME_OVER';
+        const prog = state.progress ? 'Votaron ' + state.progress.done + ' de ' + state.progress.total : '';
+        $('#hint').textContent = prog || Gnosia.PHASE_HINT[state.phase] || '';
+        Gnosia.renderResult($('#result'), state.result);
+        $('#skip').hidden = over;
+        $('#reset').hidden = !over;
       }
       tick();
     }
