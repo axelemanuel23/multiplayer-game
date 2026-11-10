@@ -135,9 +135,10 @@
       } else if (state.phase === 'NIGHT' && night) {
         if (nightActed) {
           add('h2', '', 'Listo. Espera al amanecer.');
-          if (investigation) add('p', 'verdict', investigation.name + (investigation.isGnosia ? ' es Gnosia.' : ' es humano.'));
+          if (investigation) add('p', 'verdict', investigation.name + (investigation.past ? ' era ' : ' es ') + (investigation.isGnosia ? 'Gnosia.' : 'humano.'));
         } else if (night.targets.length) {
-          add('h2', '', night.role === 'gnosia' ? '¿A quién eliminas esta noche?' : '¿A quién investigas?');
+          const Q = { gnosia: '¿A quién eliminas esta noche?', engineer: '¿A quién investigas?', guardian: '¿A quién proteges?', doctor: '¿A qué eliminado examinas?' };
+          add('h2', '', Q[night.role]);
           const list = document.createElement('div'); list.className = 'choices';
           for (const t of night.targets) list.append(choice(t.name, false, () => api.send({ t: 'player:night', target: t.id })));
           box.append(list);
