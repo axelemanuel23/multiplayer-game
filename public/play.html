@@ -35,6 +35,8 @@
         <h2 id="phase"></h2>
         <p id="timer" class="timer"></p>
       </div>
+      <div id="action" class="stack"></div>
+      <div id="result" class="result"></div>
       <button id="rolecard" class="rolecard" aria-live="polite"></button>
       <ul id="roster-game" class="roster"></ul>
     </section>
@@ -48,7 +50,7 @@
     const urlCode = (new URLSearchParams(location.search).get('sala') || '').toUpperCase();
     let session = JSON.parse(localStorage.getItem(KEY) || 'null');
     if (session && urlCode && session.code !== urlCode) session = null;
-    let state = null, roleMsg = null;
+    let state = null, roleMsg = null, myVote = null, night = null, nightActed = false, investigation = null;
 
     $('#code-in').value = urlCode;
 
@@ -62,6 +64,14 @@
           state = m; Gnosia.syncClock(m); render();
         } else if (m.t === 'you:role') {
           roleMsg = m; renderRole(false); keepAwake();
+        } else if (m.t === 'vote:ack') {
+          myVote = m.target; renderAction();
+        } else if (m.t === 'night:prompt') {
+          night = m; nightActed = m.acted; renderAction();
+        } else if (m.t === 'night:ack') {
+          nightActed = true; renderAction();
+        } else if (m.t === 'night:result') {
+          investigation = m; renderAction();
         } else if (m.t === 'error') {
           if (m.code === 'SESSION_LOST') { localStorage.removeItem(KEY); session = null; state = null; render(); }
           else $('#join-err').textContent = m.message;
@@ -81,7 +91,10 @@
 
     function render() {
       if (!session || !state) return show('join');
+      if (state.phase !== 'VOTE') myVote = null;
+      if (state.phase !== 'NIGHT') { night = null; nightActed = false; investigation = null; }
       if (state.phase === 'LOBBY') {
+        roleMsg = null;
         show('lobby');
         Gnosia.renderRoster($('#roster-lobby'), state.players, session.playerId);
       } else {
@@ -89,8 +102,50 @@
         $('#phase').textContent = Gnosia.PHASE_LABEL[state.phase] || state.phase;
         Gnosia.renderRoster($('#roster-game'), state.players, session.playerId);
         renderRole(false);
+        Gnosia.renderResult($('#result'), state.result);
+        renderAction();
       }
       tick();
+    }
+
+    // Votación y acciones de noche.
+    function choice(label, selected, onClick) {
+      const b = document.createElement('button');
+      b.textContent = label;
+      if (selected) b.classList.add('selected');
+      b.addEventListener('click', onClick);
+      return b;
+    }
+    function renderAction() {
+      const box = $('#action');
+      box.replaceChildren();
+      const add = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; e.textContent = text; box.append(e); return e; };
+      const me = state && state.players.find((p) => p.id === session.playerId);
+      if (!me) return;
+      if (!me.alive && state.phase !== 'GAME_OVER' && state.phase !== 'LOBBY') return add('p', 'mute', 'Fuiste eliminado. Sigue la partida como observador.');
+      if (state.phase === 'VOTE') {
+        add('h2', '', '¿A quién eliminas?');
+        const list = document.createElement('div'); list.className = 'choices';
+        for (const p of state.players.filter((x) => x.alive && x.id !== me.id)) {
+          list.append(choice(p.name, myVote === p.id, () => api.send({ t: 'player:vote', target: p.id })));
+        }
+        list.append(choice('No votar a nadie', myVote === 'skip', () => api.send({ t: 'player:vote', target: 'skip' })));
+        box.append(list);
+        add('p', 'mute', 'Puedes cambiar tu voto hasta que termine el tiempo.');
+      } else if (state.phase === 'NIGHT' && night) {
+        if (nightActed) {
+          add('h2', '', 'Listo. Espera al amanecer.');
+          if (investigation) add('p', 'verdict', investigation.name + (investigation.isGnosia ? ' es Gnosia.' : ' es humano.'));
+        } else if (night.targets.length) {
+          add('h2', '', night.role === 'gnosia' ? '¿A quién eliminas esta noche?' : '¿A quién investigas?');
+          const list = document.createElement('div'); list.className = 'choices';
+          for (const t of night.targets) list.append(choice(t.name, false, () => api.send({ t: 'player:night', target: t.id })));
+          box.append(list);
+        } else {
+          add('h2', '', 'Esta noche no tienes acción.');
+          box.append(choice('Dormir', false, () => api.send({ t: 'player:night' })));
+        }
+      }
     }
 
     // El rol solo se ve mientras se mantiene presionado (evita miradas ajenas).
