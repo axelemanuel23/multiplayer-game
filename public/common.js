@@ -64,6 +64,17 @@
     }));
   }
 
+  // Línea de texto de un informe privado (Ingeniero, Doctor, Guardián, Gnosia).
+  function describeReport(r) {
+    const n = 'Noche ' + r.night + ': ';
+    const who = r.isGnosia ? 'Gnosia' : 'humano';
+    if (r.kind === 'investigate') return n + r.name + ' es ' + who + '.';
+    if (r.kind === 'examine') return n + r.name + ' era ' + who + '.';
+    if (r.kind === 'protect') return n + 'protegiste a ' + r.name + '.';
+    if (r.kind === 'attack') return n + 'atacaste a ' + r.name + '.';
+    return '';
+  }
+
   // Conexión WebSocket con reconexión automática.
   function connect({ onOpen, onMessage }) {
     const conn = document.getElementById('conn');
@@ -88,5 +99,5 @@
     return api;
   }
 
-  window.Gnosia = { PHASE_LABEL, PHASE_HINT, ROLE, renderResult, syncClock, remaining, fmtTime, renderRoster, connect };
+  window.Gnosia = { PHASE_LABEL, PHASE_HINT, ROLE, renderResult, describeReport, syncClock, remaining, fmtTime, renderRoster, connect };
 })();
