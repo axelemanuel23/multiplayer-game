@@ -4,6 +4,15 @@
     ROLE_REVEAL: 'Revisen su rol en el celular',
     DEBATE: 'Debate',
     VOTE: 'Votación',
+    VOTE_RESULT: 'Resultado de la votación',
+    NIGHT: 'Es de noche',
+    DAWN: 'Amanece',
+    GAME_OVER: 'Fin de la partida',
+  };
+
+  const PHASE_HINT = {
+    VOTE: 'Voten desde el celular.',
+    NIGHT: 'Cada jugador actúa en su celular.',
   };
 
   const ROLE = {
@@ -24,6 +33,32 @@
       if (!p.connected) li.classList.add('off');
       if (!p.alive) li.classList.add('out');
       return li;
+    }));
+  }
+
+  // Texto público del resultado de una fase (votación, amanecer o fin de partida).
+  function describeResult(r) {
+    if (!r) return [];
+    if (r.kind === 'vote') {
+      const lines = r.rows.map((x) => x.name + ': ' + x.voters.length + (x.voters.length === 1 ? ' voto' : ' votos') + ' (' + x.voters.join(', ') + ')');
+      if (r.abstained) lines.push('Sin votar: ' + r.abstained);
+      lines.push(r.eliminated ? r.eliminated + ' fue puesto en hibernación.' : 'Empate o sin votos: nadie fue eliminado.');
+      return lines;
+    }
+    if (r.kind === 'dawn') return [r.victim ? r.victim + ' no despertó.' : 'Amaneció y todos siguen con vida.'];
+    if (r.kind === 'end') {
+      return [r.winner === 'humans' ? 'Ganan los humanos.' : 'Ganan los Gnosia.']
+        .concat(r.roles.map((x) => x.name + ': ' + ROLE[x.role].name + (x.alive ? '' : ' (eliminado)')));
+    }
+    return [];
+  }
+
+  function renderResult(el, result) {
+    el.replaceChildren(...describeResult(result).map((t, i) => {
+      const p = document.createElement('p');
+      p.textContent = t;
+      if (i === 0 && result.kind === 'end') p.className = 'verdict';
+      return p;
     }));
   }
 
@@ -51,5 +86,5 @@
     return api;
   }
 
-  window.Gnosia = { PHASE_LABEL, ROLE, syncClock, remaining, fmtTime, renderRoster, connect };
+  window.Gnosia = { PHASE_LABEL, PHASE_HINT, ROLE, renderResult, syncClock, remaining, fmtTime, renderRoster, connect };
 })();
