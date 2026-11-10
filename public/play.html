@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gnosia</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div id="conn" class="conn" role="status">Sin conexión. Reintentando…</div>
+  <main class="phone">
+
+    <form id="join" class="stack" autocomplete="off">
+      <h1>Unirse a la partida</h1>
+      <div>
+        <label for="code-in">Código de sala</label>
+        <input id="code-in" maxlength="4" autocapitalize="characters" required>
+      </div>
+      <div>
+        <label for="name-in">Tu nombre</label>
+        <input id="name-in" maxlength="16" required>
+      </div>
+      <button class="primary" type="submit">Entrar</button>
+      <p id="join-err" class="error" role="alert"></p>
+    </form>
+
+    <section id="lobby" class="stack" hidden>
+      <h1>Estás dentro</h1>
+      <p class="mute">Espera a que se inicie la partida en la pantalla común.</p>
+      <ul id="roster-lobby" class="roster"></ul>
+    </section>
+
+    <section id="game" class="stack" hidden>
+      <div>
+        <h2 id="phase"></h2>
+        <p id="timer" class="timer"></p>
+      </div>
+      <button id="rolecard" class="rolecard" aria-live="polite"></button>
+      <ul id="roster-game" class="roster"></ul>
+    </section>
+
+  </main>
+
+  <script src="/common.js"></script>
+  <script>
+    const $ = (s) => document.querySelector(s);
+    const KEY = 'gnosia:player';
+    const urlCode = (new URLSearchParams(location.search).get('sala') || '').toUpperCase();
+    let session = JSON.parse(localStorage.getItem(KEY) || 'null');
+    if (session && urlCode && session.code !== urlCode) session = null;
+    let state = null, roleMsg = null;
+
+    $('#code-in').value = urlCode;
+
+    const api = Gnosia.connect({
+      onOpen(api) { if (session) api.send({ t: 'player:resume', code: session.code, token: session.token }); },
+      onMessage(m) {
+        if (m.t === 'player:joined') {
+          session = { code: m.code, token: m.token, playerId: m.playerId };
+          localStorage.setItem(KEY, JSON.stringify(session));
+        } else if (m.t === 'state') {
+          state = m; Gnosia.syncClock(m); render();
+        } else if (m.t === 'you:role') {
+          roleMsg = m; renderRole(false); keepAwake();
+        } else if (m.t === 'error') {
+          if (m.code === 'SESSION_LOST') { localStorage.removeItem(KEY); session = null; state = null; render(); }
+          else $('#join-err').textContent = m.message;
+        }
+      },
+    });
+
+    $('#join').addEventListener('submit', (e) => {
+      e.preventDefault();
+      $('#join-err').textContent = '';
+      api.send({ t: 'player:join', code: $('#code-in').value.trim().toUpperCase(), name: $('#name-in').value });
+    });
+
+    function show(view) {
+      for (const id of ['join', 'lobby', 'game']) $('#' + id).hidden = id !== view;
+    }
+
+    function render() {
+      if (!session || !state) return show('join');
+      if (state.phase === 'LOBBY') {
+        show('lobby');
+        Gnosia.renderRoster($('#roster-lobby'), state.players, session.playerId);
+      } else {
+        show('game');
+        $('#phase').textContent = Gnosia.PHASE_LABEL[state.phase] || state.phase;
+        Gnosia.renderRoster($('#roster-game'), state.players, session.playerId);
+        renderRole(false);
+      }
+      tick();
+    }
+
+    // El rol solo se ve mientras se mantiene presionado (evita miradas ajenas).
+    const card = $('#rolecard');
+    function renderRole(shown) {
+      card.classList.toggle('shown', shown);
+      card.classList.toggle('gnosia', shown && !!roleMsg && roleMsg.role === 'gnosia');
+      card.replaceChildren();
+      const line = (cls, text) => { const p = document.createElement('p'); if (cls) p.className = cls; p.textContent = text; card.append(p); };
+      if (!roleMsg) return line('mute', 'Esperando tu rol…');
+      if (!shown) return line('mute', 'Mantén presionado para ver tu rol');
+      const r = Gnosia.ROLE[roleMsg.role];
+      line('role-name', r.name);
+      line('', r.hint);
+      if (roleMsg.allies && roleMsg.allies.length) line('mute', 'Tus aliados: ' + roleMsg.allies.join(', '));
+    }
+    const hold = (e) => { e.preventDefault(); renderRole(true); };
+    const release = () => renderRole(false);
+    card.addEventListener('pointerdown', hold);
+    ['pointerup', 'pointercancel', 'pointerleave', 'blur'].forEach((ev) => card.addEventListener(ev, release));
+    card.addEventListener('keydown', (e) => { if (e.key === ' ' || e.key === 'Enter') hold(e); });
+    card.addEventListener('keyup', release);
+    card.addEventListener('contextmenu', (e) => e.preventDefault());
+
+    function tick() {
+      if (!state || state.phase === 'LOBBY' || !state.phaseEndsAt) { $('#timer').textContent = ''; return; }
+      $('#timer').textContent = Gnosia.fmtTime(Gnosia.remaining(state.phaseEndsAt));
+    }
+    setInterval(tick, 250);
+
+    // Evita que el celular apague la pantalla durante la partida.
+    let lock = null;
+    async function keepAwake() {
+      try { if ('wakeLock' in navigator && !lock) { lock = await navigator.wakeLock.request('screen'); lock.addEventListener('release', () => { lock = null; }); } } catch {}
+    }
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && roleMsg) keepAwake(); });
+  </script>
+</body>
+</html>

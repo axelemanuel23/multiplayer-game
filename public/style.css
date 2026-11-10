@@ -1,0 +1,79 @@
+:root {
+  --hull: #11172b;
+  --deck: #1b2440;
+  --line: #33406b;
+  --ice: #e8eef8;
+  --mute: #93a0c0;
+  --signal: #f2b84b;
+  --alarm: #ff5d7a;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+body {
+  background: var(--hull);
+  color: var(--ice);
+  font: 17px/1.5 "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+}
+[hidden] { display: none !important; }
+h1, h2, p { margin: 0; }
+h1 { font-size: 1.9rem; font-weight: 800; letter-spacing: -0.01em; }
+h2 { font-size: 1.25rem; font-weight: 700; }
+.mute { color: var(--mute); }
+
+.conn {
+  position: fixed; inset: 0 0 auto 0; padding: 6px 12px; text-align: center; font-size: 14px;
+  background: var(--alarm); color: #1a0b10; transform: translateY(-100%); transition: transform .2s; z-index: 10;
+}
+.conn.off { transform: none; }
+
+button {
+  font: inherit; font-weight: 700; min-height: 52px; padding: 0 22px; border-radius: 12px;
+  border: 1px solid var(--line); background: var(--deck); color: var(--ice); cursor: pointer;
+}
+button.primary { background: var(--signal); border-color: var(--signal); color: #1b1405; }
+button:disabled { opacity: .45; cursor: not-allowed; }
+input {
+  font: inherit; width: 100%; min-height: 52px; padding: 0 14px; border-radius: 12px;
+  border: 1px solid var(--line); background: var(--deck); color: var(--ice);
+}
+:focus-visible { outline: 3px solid var(--signal); outline-offset: 2px; }
+label { display: block; margin-bottom: 6px; color: var(--mute); font-size: 15px; }
+.error { color: var(--alarm); min-height: 1.5em; }
+
+.roster { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.roster li {
+  padding: 6px 14px; border-radius: 999px; background: var(--deck); border: 1px solid var(--line); font-weight: 600;
+}
+.roster li.off { opacity: .45; }
+.roster li.out { text-decoration: line-through; opacity: .35; }
+
+.timer { font-size: 3rem; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--signal); }
+
+/* ---- pantalla común ---- */
+.host { min-height: 100vh; padding: 5vh 6vw; display: flex; flex-direction: column; gap: 4vh; }
+.join { display: flex; align-items: center; gap: 5vw; flex-wrap: wrap; }
+.qr { width: min(34vh, 40vw); aspect-ratio: 1; padding: 12px; background: #fff; border-radius: 16px; }
+.qr svg { width: 100%; height: 100%; display: block; }
+.code {
+  font: 800 clamp(64px, 14vh, 150px)/1 ui-monospace, "Cascadia Mono", Consolas, monospace;
+  letter-spacing: .16em; color: var(--ice);
+}
+.url { color: var(--mute); word-break: break-all; }
+.host .roster li { font-size: 1.3rem; padding: 8px 20px; }
+.host .actions { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+.phase-name { font-size: clamp(2rem, 6vh, 4rem); font-weight: 800; }
+
+/* ---- celular ---- */
+.phone { min-height: 100svh; padding: 24px 20px 32px; max-width: 480px; margin: 0 auto; display: flex; flex-direction: column; gap: 22px; }
+.stack { display: flex; flex-direction: column; gap: 14px; }
+.rolecard {
+  min-height: 190px; border-radius: 18px; border: 2px dashed var(--line); background: var(--deck);
+  padding: 20px; text-align: left; display: flex; flex-direction: column; justify-content: center; gap: 8px;
+  user-select: none; -webkit-user-select: none; touch-action: none;
+}
+.rolecard .role-name { font-size: 2.2rem; font-weight: 800; }
+.rolecard.shown { border-style: solid; border-color: var(--signal); }
+.rolecard.shown.gnosia { border-color: var(--alarm); }
+.rolecard.shown.gnosia .role-name { color: var(--alarm); }
+
+@media (prefers-reduced-motion: reduce) { .conn { transition: none; } }
