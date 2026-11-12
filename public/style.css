@@ -45,6 +45,7 @@ label { display: block; margin-bottom: 6px; color: var(--mute); font-size: 15px;
   padding: 6px 14px; border-radius: 999px; background: var(--deck); border: 1px solid var(--line); font-weight: 600;
 }
 .roster li.off { opacity: .45; }
+.roster li.verified { border-color: var(--signal); }
 .roster li.out { text-decoration: line-through; opacity: .35; }
 
 .timer { font-size: 3rem; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--signal); }
@@ -84,6 +85,8 @@ button.selected { background: var(--signal); border-color: var(--signal); color:
 .verdict { font-size: 1.5rem; font-weight: 800; color: var(--signal); }
 .host .result p { font-size: 1.4rem; }
 .big { font-size: 1.4rem; }
+.vigias { color: var(--signal); font-weight: 600; }
+.vigias:empty { display: none; }
 
 .story { font-size: clamp(1.2rem, 2.8vh, 1.9rem); line-height: 1.6; max-width: 70ch; }
 
