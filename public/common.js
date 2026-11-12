@@ -16,11 +16,11 @@
   };
 
   const ROLE = {
-    gnosia: { name: 'Gnosia', hint: 'Elimina tripulantes sin que te descubran.' },
-    engineer: { name: 'Ingeniero', hint: 'Cada noche podrás investigar a un jugador.' },
-    guardian: { name: 'Guardián', hint: 'Cada noche puedes proteger a un jugador del ataque.' },
+    gnosia: { name: 'Infectado', hint: 'Ataca de noche sin que te descubran.' },
+    engineer: { name: 'Ingeniero', hint: 'Cada noche podrás analizar a un jugador.' },
+    guardian: { name: 'Oficial de Bioseguridad', hint: 'Cada noche puedes sellar la cabina de un jugador.' },
     doctor: { name: 'Doctor', hint: 'Cada noche puedes examinar a un eliminado.' },
-    crew: { name: 'Tripulante', hint: 'Debate y vota para encontrar a los Gnosia.' },
+    crew: { name: 'Tripulante', hint: 'Debate y vota para encontrar a los infectados.' },
   };
 
   let skew = 0;
@@ -44,13 +44,14 @@
     if (r.kind === 'vote') {
       const lines = r.rows.map((x) => x.name + ': ' + x.voters.length + (x.voters.length === 1 ? ' voto' : ' votos') + ' (' + x.voters.join(', ') + ')');
       if (r.abstained) lines.push('Sin votar: ' + r.abstained);
-      lines.push(r.eliminated ? r.eliminated + ' fue puesto en hibernación.' : 'Empate o sin votos: nadie fue eliminado.');
+      lines.push(r.text || (r.eliminated ? r.eliminated + ' fue puesto en cuarentena.' : 'Empate o sin votos: nadie fue aislado.'));
       return lines;
     }
-    if (r.kind === 'dawn') return [r.victim ? r.victim + ' no despertó.' : 'Amaneció y todos siguen con vida.'];
+    if (r.kind === 'dawn') return [r.text || (r.victim ? r.victim + ' no despertó.' : 'Amaneció y todos siguen con vida.')];
     if (r.kind === 'end') {
-      return [r.winner === 'humans' ? 'Ganan los humanos.' : 'Ganan los Gnosia.']
-        .concat(r.roles.map((x) => x.name + ': ' + ROLE[x.role].name + (x.alive ? '' : ' (eliminado)')));
+      const lines = [r.winner === 'humans' ? 'Ganan los sanos.' : 'Ganan los infectados.'];
+      if (r.text) lines.push(r.text);
+      return lines.concat(r.roles.map((x) => x.name + ': ' + ROLE[x.role].name + (x.alive ? '' : ' (eliminado)')));
     }
     return [];
   }
@@ -67,11 +68,12 @@
   // Línea de texto de un informe privado (Ingeniero, Doctor, Guardián, Gnosia).
   function describeReport(r) {
     const n = 'Noche ' + r.night + ': ';
-    const who = r.isGnosia ? 'Gnosia' : 'humano';
-    if (r.kind === 'investigate') return n + r.name + ' es ' + who + '.';
-    if (r.kind === 'examine') return n + r.name + ' era ' + who + '.';
+    if (r.kind === 'investigate') return n + r.name + (r.isGnosia ? ' está infectado.' : ' está sano.');
+    if (r.kind === 'examine') return n + r.name + (r.isGnosia ? ' estaba infectado.' : ' estaba sano.');
     if (r.kind === 'protect') return n + 'protegiste a ' + r.name + '.';
     if (r.kind === 'attack') return n + 'atacaste a ' + r.name + '.';
+    if (r.kind === 'reveal_sent') return n + 'le dijiste a ' + r.name + ' que eres ' + ROLE[r.claim].name + '.';
+    if (r.kind === 'revealed') return n + r.name + ' te reveló que es ' + ROLE[r.claim].name + '.';
     return '';
   }
 
@@ -88,6 +90,8 @@
       ws.onmessage = (e) => {
         let m;
         try { m = JSON.parse(e.data); } catch { return; }
+        // Nombres de rol temáticos que envía el servidor (Infectado, Oficial de Bioseguridad…).
+        if (m.t === 'state' && m.roleNames) for (const k of Object.keys(m.roleNames)) if (ROLE[k]) ROLE[k].name = m.roleNames[k];
         onMessage(m, api);
       };
       ws.onclose = () => {
