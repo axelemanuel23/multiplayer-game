@@ -87,17 +87,22 @@ async function newGame(names) {
   tx(back, { t: 'player:resume', code: g.code, token: last(g.ps[E], 'player:joined').token }); await wait(200);
   assert(last(back, 'you:reports').reports.length === 1, 'al reconectar, el Ingeniero recupera su informe');
 
-  // --- 8 jugadores: intenciones, revelaciones, Guardián y Doctor ---
-  const n8 = ['A1', 'B2', 'C3', 'D4', 'E5', 'F6', 'G7', 'H8'];
+  // --- 10 jugadores: Vigía, intenciones, revelaciones, Guardián y Doctor ---
+  const n8 = ['A1', 'B2', 'C3', 'D4', 'E5', 'F6', 'G7', 'H8', 'I9', 'J10'];
   g = await newGame(n8);
   const r8 = n8.map((_, i) => g.role(i));
   const idx = (r) => r8.map((x, i) => (x === r ? i : -1)).filter((i) => i >= 0);
   const [G1, G2] = idx('gnosia'), GD = idx('guardian')[0], DR = idx('doctor')[0], EN = idx('engineer')[0], cr = idx('crew');
-  assert(idx('gnosia').length === 2 && GD !== undefined && DR !== undefined, 'tabla de 8: 2 Gnosia, Guardián y Doctor');
+  assert(idx('gnosia').length === 3 && GD !== undefined && DR !== undefined && cr.length === 4, 'tabla de 10: 3 Infectados, Guardián, Doctor, Ingeniero y 4 Tripulantes');
+  const vs = g.state().players.filter((p) => p.verified);
+  assert(vs.length === 1 && cr.map((i) => n8[i]).includes(vs[0].name), 'con 10 hay 1 Vigía público y es un Tripulante (nunca un infectado)');
+  assert(g.state().composition.crew === 3 && g.state().composition.vigia === 1, 'la composición pública separa al Vigía de los Tripulantes');
+  assert(last(g.ps[n8.indexOf(vs[0].name)], 'you:role').verified === true && last(g.ps[G1], 'you:role').verified === false, 'solo el Vigía recibe la marca verified en su rol');
+  assert(!g.ps[G1].msgs.some((m) => m.t === 'night:prompt' && m.claims && m.claims.includes('vigia')), 'los infectados no pueden declararse Vigía');
 
   // Día 1 sin eliminados → noche 1
   await g.toVote();
-  for (let i = 0; i < 8; i++) tx(g.ps[i], { t: 'player:vote', target: 'skip' });
+  for (let i = 0; i < 10; i++) tx(g.ps[i], { t: 'player:vote', target: 'skip' });
   await wait(300); await g.skip();
 
   // Intención de ataque visible para el aliado
@@ -129,7 +134,7 @@ async function newGame(names) {
   const out = cr[2];
   await g.send(G1, { t: 'player:vote', target: g.id(out) });
   assert(last(g.ps[G2], 'ally:intents').kind === 'vote' && last(g.ps[G2], 'ally:intents').intents.find((x) => x.name === n8[G1]).target === n8[out], 'el aliado ve la intención de voto en vivo');
-  for (let i = 0; i < 8; i++) if (i !== G1) tx(g.ps[i], { t: 'player:vote', target: i === out ? 'skip' : g.id(out) });
+  for (let i = 0; i < 10; i++) if (i !== G1) tx(g.ps[i], { t: 'player:vote', target: i === out ? 'skip' : g.id(out) });
   await wait(300);
   assert(g.state().result.eliminated === n8[out], 'día 2: se elimina a un Tripulante');
   await g.skip(); await wait(100);
@@ -152,6 +157,19 @@ async function newGame(names) {
     tx(g.host, { t: 'host:reset' }); await wait(200);
   }
   assert(seen.size === 7, '7 partidas seguidas usan 7 narrativas generales distintas');
+
+  // --- Tabla completa: sin roles especiales con 4, Vigías según la tabla ---
+  const expected = { 4: [1, 0, 0, 0, 0], 5: [1, 1, 0, 0, 0], 6: [1, 1, 0, 0, 0], 7: [2, 1, 1, 0, 0], 8: [2, 1, 1, 0, 0], 9: [2, 1, 1, 0, 0], 10: [3, 1, 1, 1, 1], 11: [3, 1, 1, 1, 2], 12: [3, 1, 1, 1, 2] };
+  for (const n of Object.keys(expected).map(Number)) {
+    const nm = Array.from({ length: n }, (_, i) => 'P' + (i + 1));
+    g = await newGame(nm);
+    const rr = nm.map((_, i) => g.role(i));
+    const c = (r) => rr.filter((x) => x === r).length;
+    const got = [c('gnosia'), c('engineer'), c('doctor'), c('guardian'), g.state().players.filter((p) => p.verified).length];
+    assert(JSON.stringify(got) === JSON.stringify(expected[n]) && c('crew') === n - got[0] - got[1] - got[2] - got[3], `tabla de ${n}: infectados/ingeniero/doctor/guardián/vigías = ${got.join('/')}`);
+    const vnames = g.state().players.filter((p) => p.verified).map((p) => p.name);
+    assert(vnames.every((v) => rr[nm.indexOf(v)] === 'crew'), `con ${n} los Vigías son siempre Tripulantes`);
+  }
 
   // --- Pausa ---
   g = await newGame(names);
