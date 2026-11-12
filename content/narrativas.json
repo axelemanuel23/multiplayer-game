@@ -77,8 +77,8 @@
       "variantes": [
         "Nunca bajaste a la Tierra. Pasaste los últimos años en la {nave}, lejos del foco del brote, y sabes que estás sano. Pero {n_infectados} de las {n_tripulantes} personas a bordo no lo están, y nadie sabe quiénes son por el error de las etiquetas. Tu ventaja es conocer la nave como pocos.",
         "Eres parte de la dotación original de la {nave}. Cuando el resto bajó a evacuar, tú te quedaste de guardia, y por eso nunca estuviste expuesto. Ahora la nave está llena, hay {n_infectados} infectados entre ustedes y las muestras se perdieron. Conoces los pasillos, y eso puede ser tu mejor arma.",
-        "Mientras los demás huían de la Tierra, tú ya estabas a bordo cumpliendo tu turno. No tuviste contacto con el patógeno, pero sí con quienes subieron después. De {n_tripulantes} personas, {n_infectados} están infectadas. Observa a quien se mueve demasiado de noche.",
-        "Tu puesto está en el puente, lejos de las cabinas de los evacuados. Estás sano, lo sabes, pero no puedes probarlo. {n_infectados} infectados se esconden entre {n_tripulantes} personas. Tu palabra vale lo que logres demostrar."
+        "Mientras los demás huían de la Tierra, tú ya estabas a bordo cumpliendo tu turno. Los registros de la nave confirman que nunca estuviste expuesto, y toda la tripulación lo sabe. De {n_tripulantes} personas, {n_infectados} están infectadas. Observa a quien se mueve demasiado de noche.",
+        "Tu puesto está en el puente, lejos de las cabinas de los evacuados. Los registros del puente confirman que estás sano, y toda la tripulación lo sabe. {n_infectados} infectados se esconden entre {n_tripulantes} personas. No tienes habilidades, pero nadie va a dudar de tu palabra: úsala bien."
       ]
     },
     "doctor": {
