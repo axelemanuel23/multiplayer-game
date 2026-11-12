@@ -40,6 +40,7 @@
       <div id="result" class="result"></div>
       <button id="rolecard" class="rolecard" aria-live="polite"></button>
       <p id="comp" class="mute"></p>
+      <p id="vigias" class="vigias"></p>
       <ul id="roster-game" class="roster"></ul>
     </section>
 
@@ -114,8 +115,8 @@
         $('#pausebar').hidden = !state.paused;
         $('#phase').textContent = Gnosia.PHASE_LABEL[state.phase] || state.phase;
         Gnosia.renderRoster($('#roster-game'), state.players, session.playerId);
-        $('#comp').textContent = state.composition
-          ? 'En la nave: ' + Object.entries(state.composition).filter(([, n]) => n > 0).map(([r, n]) => Gnosia.ROLE[r].name + ' ×' + n).join(' · ') : '';
+        $('#comp').textContent = Gnosia.compText(state);
+        $('#vigias').textContent = Gnosia.vigiaText(state);
         renderRole(false);
         Gnosia.renderResult($('#result'), state.result);
         renderAction();
@@ -240,7 +241,7 @@
       const line = (cls, text) => { const p = document.createElement('p'); if (cls) p.className = cls; p.textContent = text; card.append(p); };
       if (!roleMsg) return line('mute', 'Esperando tu rol…');
       if (!shown) return line('mute', 'Mantén presionado para ver tu rol' + (reports.length ? ' e informes (' + reports.length + ')' : ''));
-      const r = Gnosia.ROLE[roleMsg.role];
+      const r = roleMsg.verified ? Gnosia.ROLE.vigia : Gnosia.ROLE[roleMsg.role];
       line('role-name', r.name);
       line('', roleMsg.story || r.hint);
       if (roleMsg.allies && roleMsg.allies.length) line('mute', 'Tus aliados: ' + roleMsg.allies.join(', '));
