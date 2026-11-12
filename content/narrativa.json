@@ -1,0 +1,175 @@
+{
+  "_leeme": "Textos de ambientación del juego. Los marcadores entre llaves se reemplazan al iniciar la partida. 'general' se elige una vez por partida y se muestra en la pantalla común; cada rol tiene varias 'variantes' y se sortea una por jugador.",
+  "marcadores": {
+    "{nave}": "nombre de la nave (sorteado de 'naves', igual para toda la partida)",
+    "{n_tripulantes}": "cantidad total de jugadores",
+    "{n_infectados}": "cantidad de infectados (Gnosia) de la partida",
+    "{necesidad}": "lo que necesitan los infectados (sorteado de 'necesidades', igual para toda la partida)",
+    "{motivo}": "por qué se salvó ese jugador (sorteado de 'motivos_salvacion' para cada jugador humano)",
+    "{limite}": "por qué el Oficial de Bioseguridad solo puede sellar una cabina (sorteado de 'limites_sellado')",
+    "{aliados}": "nombres de los otros infectados (solo en 'variantes_con_aliados')",
+    "{nombre}": "nombre del jugador afectado (solo en 'eventos')"
+  },
+  "naves": [
+    "Aurora",
+    "Meridiano",
+    "Arca Tres",
+    "Horizonte Norte",
+    "Casiopea",
+    "Esperanza",
+    "Lumbre",
+    "Perséfone",
+    "Ítaca",
+    "Cóndor"
+  ],
+  "necesidades": [
+    "carne humana",
+    "sangre humana",
+    "tejido humano"
+  ],
+  "limites_sellado": [
+    "El sistema de sellado necesita toda la noche para recargarse, así que solo alcanza para una cabina.",
+    "Solo tienes una llave de cuarentena, y no vuelve a tus manos hasta el amanecer.",
+    "El protocolo exige un código de autorización y la nave solo generó uno por noche.",
+    "La reserva de energía del sistema de contención apenas alcanza para una cabina a la vez."
+  ],
+  "motivos_salvacion": [
+    "Estabas de turno de mantenimiento, aislado en la sala de máquinas, cuando el patógeno se propagó.",
+    "Te aplicaron una dosis experimental de la vacuna antes del despegue.",
+    "Tu cabina quedó sellada por una falla del sistema durante las primeras 48 horas.",
+    "Llevabas puesto un traje de contención por una reparación en el casco exterior.",
+    "Un cuadro de fiebre te mantuvo en enfermería, y por eso te hicieron el primer análisis.",
+    "Nadie sabe por qué, pero tus anticuerpos rechazaron el patógeno desde el principio.",
+    "Pasaste los primeros días encerrado en la bodega de carga, esperando un traslado que nunca llegó.",
+    "Tu turno terminó una hora antes de que se abriera el compartimiento donde empezó el contagio.",
+    "Alguien te cedió su lugar en el turno de la zona contaminada, y nunca supiste por qué.",
+    "Estabas en aislamiento por una cirugía menor cuando se declaró el brote."
+  ],
+  "general": [
+    "La {nave} despegó de una Tierra en cuarentena total. El patógeno avanzó más rápido que cualquier plan de contención, y quienes lograron subir huyeron sin mirar atrás. Ya en órbita, los análisis de sangre revelaron que {n_infectados} de las {n_tripulantes} personas a bordo estaban infectadas. Entonces un error de laboratorio mezcló las etiquetas de las muestras y nadie sabe quiénes son. La vacuna de la nave solo previene nuevos contagios: no cura a nadie, y no hay medios para desarrollar una cura. Los infectados sienten una necesidad creciente de {necesidad}, y se agudiza por las noches.",
+    "La última transmisión desde la Tierra llegó hace tres semanas: «No regresen». A bordo de la {nave}, el equipo médico logró fabricar una vacuna que frena el contagio, pero no cura a quienes ya portan el patógeno, y el laboratorio no tiene recursos para intentarlo. Una prueba de sangre detectó {n_infectados} casos entre {n_tripulantes} tripulantes. Esa misma noche una caja de muestras cayó al suelo y las etiquetas se perdieron. Los infectados necesitan {necesidad}, y la oscuridad los vuelve peligrosos.",
+    "Nadie en la {nave} olvidará el día en que sonó la alarma de contaminación. Para entonces el brote ya había arrasado la estación de origen, y esta nave fue la última en salir. La vacuna llegó a tiempo para detener los contagios, pero no para salvar a los que ya estaban enfermos: {n_infectados} de ustedes. El laboratorio los identificó con análisis de sangre, hasta que un fallo informático desvinculó cada muestra de su dueño. Los infectados sienten la urgencia de {necesidad}, y por las noches no pueden resistirla.",
+    "La {nave} es un refugio, pero también una trampa. Con {n_tripulantes} personas a bordo, un recuento de sangre confirmó que {n_infectados} estaban infectadas. Antes de publicar los resultados, el congelador de muestras falló y las etiquetas se despegaron. Hay vacuna, pero solo preventiva; no hay cura ni herramientas para crearla. Los infectados no pueden evitar la necesidad de {necesidad}, y la noche empeora todo.",
+    "El brote empezó en un cargamento que nadie revisó. Cuando la Tierra cayó, la {nave} salió con {n_tripulantes} personas y la certeza de que algunas llevaban el patógeno dentro. Los análisis encontraron {n_infectados} casos; después, un derrame de reactivo borró las etiquetas de todas las muestras. La vacuna evita nuevos contagios, pero la cura sigue fuera de alcance. Los infectados necesitan {necesidad}, y la noche los impulsa a buscarla.",
+    "Les prometieron un viaje corto hasta una colonia segura. Pero a mitad del trayecto, la {nave} confirmó el patógeno entre su gente: {n_infectados} infectados entre {n_tripulantes} personas. El laboratorio apenas había tomado las muestras cuando un corte de energía mezcló las etiquetas. La vacuna que sí existe no cura, y los equipos para intentar una cura se quedaron en la Tierra. Quienes ya están infectados sienten un impulso creciente por {necesidad}, sobre todo de noche.",
+    "La cuarentena duró lo que tardó en fallar. La {nave} despegó con {n_tripulantes} personas a bordo, y para cuando se supo que {n_infectados} ya estaban infectadas, el registro de las muestras de sangre se había perdido en un error que nadie admite haber cometido. La vacuna detuvo la propagación, pero no hay cura. Los infectados necesitan {necesidad}, y la noche los vuelve implacables."
+  ],
+  "roles": {
+    "crew": {
+      "nombre": "Tripulante",
+      "variantes": [
+        "Eres tripulante de la {nave}, una nave que escapó de la Tierra cuando el brote se salió de control. {motivo} Aun así, {n_infectados} de las {n_tripulantes} personas a bordo fueron contagiadas, y un error mezcló las etiquetas de sus muestras: nadie sabe quiénes son. La vacuna previene el contagio, pero no cura a los ya infectados. Hay que encontrarlos antes de que sea tarde.",
+        "La cuarentena empezó hace once días y tú sigues sano. {motivo} El laboratorio confirmó {n_infectados} casos entre {n_tripulantes} tripulantes, pero las etiquetas de las muestras quedaron revueltas. Los infectados necesitan {necesidad}, y cada noche alguien puede desaparecer. Observa, escucha y vota con cuidado.",
+        "Las alarmas de contención dejaron de sonar hace horas, y eso es lo peor. {motivo} Sabes que hay {n_infectados} infectados entre ustedes, pero no cuáles. Cuando cae la noche, algo en los pasillos cambia. Tu única arma es la palabra: pregunta, desconfía y decide con quién te quedas.",
+        "Te vacunaste y la vacuna funciona: nadie más va a contagiarse. Pero {n_infectados} de las {n_tripulantes} personas a bordo ya estaban infectadas, y la vacuna no las cura. {motivo} Por un error de laboratorio nadie sabe cuáles son. Lo único que queda es encontrarlos antes de que la necesidad de {necesidad} los lleve a atacar.",
+        "Los pasillos de la {nave} huelen a antiséptico y a miedo. {motivo} Entre ustedes hay {n_infectados} infectados, pero las muestras se mezclaron y nadie sabe quiénes son. No te fíes del que duerme demasiado poco ni del que sonríe demasiado.",
+        "Cada vez que se apagan las luces, alguien menos despierta por la mañana. {motivo} Sabes que los infectados no pueden controlar su necesidad de {necesidad}, pero no sabes quiénes son, porque se perdió el registro de las muestras. Hoy hay que votar, y equivocarse cuesta caro.",
+        "Eres uno de los {n_tripulantes} que despegaron de la Tierra con la esperanza de empezar de nuevo. {motivo} Pero el patógeno llegó con ustedes: {n_infectados} infectados, ocultos por el error que mezcló las etiquetas del laboratorio. Esta noche volverán a sentir su necesidad, y tú tienes que decidir en quién confiar."
+      ]
+    },
+    "crew_a_bordo": {
+      "nombre": "Personal de a bordo",
+      "alternativas": [
+        "Operador de puente",
+        "Dotación original",
+        "Centinela de la nave"
+      ],
+      "variantes": [
+        "Nunca bajaste a la Tierra. Pasaste los últimos años en la {nave}, lejos del foco del brote, y sabes que estás sano. Pero {n_infectados} de las {n_tripulantes} personas a bordo no lo están, y nadie sabe quiénes son por el error de las etiquetas. Tu ventaja es conocer la nave como pocos.",
+        "Eres parte de la dotación original de la {nave}. Cuando el resto bajó a evacuar, tú te quedaste de guardia, y por eso nunca estuviste expuesto. Ahora la nave está llena, hay {n_infectados} infectados entre ustedes y las muestras se perdieron. Conoces los pasillos, y eso puede ser tu mejor arma.",
+        "Mientras los demás huían de la Tierra, tú ya estabas a bordo cumpliendo tu turno. No tuviste contacto con el patógeno, pero sí con quienes subieron después. De {n_tripulantes} personas, {n_infectados} están infectadas. Observa a quien se mueve demasiado de noche.",
+        "Tu puesto está en el puente, lejos de las cabinas de los evacuados. Estás sano, lo sabes, pero no puedes probarlo. {n_infectados} infectados se esconden entre {n_tripulantes} personas. Tu palabra vale lo que logres demostrar."
+      ]
+    },
+    "doctor": {
+      "nombre": "Doctor",
+      "alternativas": [
+        "Médico forense",
+        "Patólogo de a bordo"
+      ],
+      "variantes": [
+        "Eres el médico forense de la {nave}. No puedes salvar a los infectados, pero sí leer lo que dejaron los muertos. Cada noche, en la sala de autopsias, puedes examinar a uno de los fallecidos: la sangre no miente y te dirá si portaba el patógeno. {motivo}",
+        "Los vivos mienten, pero los cadáveres no. Tu bisturí y tu microscopio son la única verdad confiable de la nave. Cada noche, elige a un fallecido y confirma si estaba infectado.",
+        "Tienes a tu cargo la sala de autopsias, la más fría y silenciosa de la {nave}. Cada noche puedes abrir el expediente de uno de los caídos y comprobar si el patógeno corría por su sangre. Es poco, pero es evidencia, y tú decides cuándo compartirla.",
+        "Antes eras médico clínico; ahora eres patólogo por necesidad. Cada noche puedes practicar una autopsia a uno de los fallecidos para saber si estaba infectado. {motivo}",
+        "Los análisis de sangre se perdieron, pero los muertos aún cuentan su historia. Cada noche examinas a uno de ellos y sabes con certeza si fue un infectado o una víctima. Elige bien a quién ayudas, y a quién se lo cuentas."
+      ]
+    },
+    "engineer": {
+      "nombre": "Ingeniero",
+      "alternativas": [
+        "Técnico de laboratorio"
+      ],
+      "variantes": [
+        "Eres el técnico de laboratorio. Cuando el error de etiquetas arruinó las muestras, te quedaste con el equipo que aún funciona. Cada noche puedes procesar una muestra fresca de uno de tus compañeros y descubrir si está infectado.",
+        "Tienes el único analizador que sigue calibrado. Cada noche puedes elegir a un tripulante, tomarle una muestra y ver el resultado. Es poco, pero es evidencia, y decidir cuándo compartirla es parte del riesgo.",
+        "Fuiste tú quien tomó las muestras originales, y fue tu etiquetadora la que falló. Nadie lo sabe, y quieres corregirlo. Cada noche puedes tomar una nueva muestra de un tripulante y analizarla. {motivo}",
+        "El laboratorio ya no es lo que era, pero un microscopio y un reactivo siguen funcionando. Cada noche puedes analizar la sangre de un tripulante y saber si está infectado. Si lo cuentas, te conviertes en un objetivo.",
+        "Eres el último técnico con acceso al laboratorio. Cada noche puedes sacar una gota de sangre a un compañero y leer el resultado en la pantalla. {motivo}"
+      ]
+    },
+    "guardian": {
+      "nombre": "Oficial de Bioseguridad",
+      "alternativas": [
+        "Guardia de Cuarentena",
+        "Agente de Contención"
+      ],
+      "variantes": [
+        "Eres el Oficial de Bioseguridad. Cada noche puedes declarar en cuarentena la cabina de un tripulante, como si estuviera infectado: nadie podrá entrar ni salir hasta el amanecer. {limite} No sabrás si tu decisión salvó a alguien.",
+        "Tu trabajo es proteger a los sanos, aunque sea fingiendo que están enfermos. Cada noche puedes sellar la cabina de un tripulante con el protocolo de cuarentena. {limite}",
+        "Los infectados atacan de noche, y tú tienes la llave de las puertas. Elige una cabina y ciérrala con protocolo de contención: quien esté dentro estará a salvo hasta la mañana. {limite}",
+        "Como Oficial de Bioseguridad, tienes autoridad para declarar un aislamiento. Cada noche puedes sellar una cabina como si su ocupante estuviera contagiado. {limite} {motivo}",
+        "Cada noche decides quién queda bajo protocolo de cuarentena. Quien esté sellado no podrá ser atacado, aunque nunca sabrás si alguien lo intentó. {limite}"
+      ]
+    },
+    "gnosia": {
+      "nombre": "Infectado",
+      "alternativas": [
+        "Portador",
+        "Contagiado"
+      ],
+      "variantes": [
+        "Lo sabes desde hace días: el patógeno no te dejó dormir, y lo que sientes no es hambre común, sino la necesidad de {necesidad}. Cuando mezclaron las etiquetas de las muestras, tu nombre quedó oculto entre los demás. Eres uno de {n_infectados}. Sobrevive el día; la noche es tuya.",
+        "El análisis de sangre dio positivo, y entonces el error de etiquetas te salvó del aislamiento. Ahora te mueves entre {n_tripulantes} personas que no saben quién eres. La necesidad de {necesidad} crece con cada hora de oscuridad. No dejes que te descubran.",
+        "La fiebre ya pasó, pero dejó algo en tu sangre. Cuando cae la noche, la necesidad de {necesidad} se vuelve imposible de ignorar. Eres uno de {n_infectados}, y nadie en la nave tiene cómo probarlo.",
+        "Te vacunaron demasiado tarde: el patógeno ya estaba en ti. Mientras otros duermen, tú oyes pasos, olores, latidos. La necesidad de {necesidad} no te deja pensar en otra cosa. Sonríe durante el día, actúa de noche.",
+        "Fingiste estar sano en el control médico, y funcionó. Ahora, con las muestras mezcladas, eres invisible. Pero la necesidad de {necesidad} no espera. Los {n_infectados} infectados dependen de que nadie los encuentre.",
+        "Nadie sabe qué eres, y ni siquiera tú sabes cuánto tiempo más podrás controlarte. La necesidad de {necesidad} crece a cada hora, y la noche es el único momento en que puedes saciarla. Defiéndete en el debate: no puedes permitir que sospechen de ti.",
+        "Cuando se perdieron las etiquetas, respiraste aliviado. Eres uno de {n_infectados}, y el patógeno te exige {necesidad}. Tienes que elegir bien a quién atacar y a quién acusar."
+      ],
+      "variantes_con_aliados": [
+        "Los otros infectados te reconocieron en cuanto cayó la noche: {aliados}. Juntos son {n_infectados}, y juntos necesitan {necesidad}. Coordinen su versión en el debate y no se delaten.",
+        "No estás solo. {aliados} comparten tu sangre y tu necesidad de {necesidad}. Ocultos entre {n_tripulantes} personas, solo ustedes saben quiénes son.",
+        "El error de las etiquetas los protegió a todos: {aliados} y tú. La necesidad de {necesidad} crece por la noche, y juntos pueden saciarla. Pero si uno cae, el resto corre peligro.",
+        "Se miraron una vez y supieron: {aliados} también están infectados. Son {n_infectados} contra el resto de la {nave}. De día, actúen como sanos; de noche, decide la necesidad de {necesidad}."
+      ]
+    }
+  },
+  "eventos": {
+    "eliminado_votacion": [
+      "{nombre} fue aislado en cuarentena por decisión de la tripulación.",
+      "La tripulación decidió confinar a {nombre} en la sala de aislamiento.",
+      "{nombre} fue sellado en aislamiento hasta nuevo aviso."
+    ],
+    "sin_eliminado": [
+      "Empate o sin votos: nadie fue aislado."
+    ],
+    "amanecer_victima": [
+      "{nombre} no despertó esta mañana.",
+      "Encontraron a {nombre} sin vida en su cabina.",
+      "La cabina de {nombre} amaneció en silencio. Ya no está entre ustedes."
+    ],
+    "amanecer_sin_victima": [
+      "Amaneció y todos siguen con vida.",
+      "La noche pasó en silencio: nadie falta a bordo."
+    ],
+    "victoria_sanos": [
+      "Los infectados fueron aislados. La {nave} está a salvo… por ahora.",
+      "Sin infectados a bordo, la {nave} puede seguir su rumbo."
+    ],
+    "victoria_infectados": [
+      "Los infectados ya son tantos como los sanos. La {nave} es suya.",
+      "Ya no queda forma de detenerlos: la {nave} cayó en manos de los infectados."
+    ]
+  }
+}
