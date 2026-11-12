@@ -85,4 +85,9 @@ button.selected { background: var(--signal); border-color: var(--signal); color:
 .host .result p { font-size: 1.4rem; }
 .big { font-size: 1.4rem; }
 
+.story { font-size: clamp(1.2rem, 2.8vh, 1.9rem); line-height: 1.6; max-width: 70ch; }
+
+.pausebar { margin: 0; padding: 10px 16px; border-radius: 10px; background: var(--signal); color: #1b1405; font-weight: 800; text-align: center; }
+.host .pausebar { font-size: 1.6rem; }
+
 @media (prefers-reduced-motion: reduce) { .conn { transition: none; } }
