@@ -21,6 +21,8 @@
     guardian: { name: 'Oficial de Bioseguridad', hint: 'Cada noche puedes sellar la cabina de un jugador.' },
     doctor: { name: 'Doctor', hint: 'Cada noche puedes examinar a un eliminado.' },
     crew: { name: 'Tripulante', hint: 'Debate y vota para encontrar a los infectados.' },
+    // Tripulante verificado como sano, visible para todos (no es un rol interno: se marca con verified).
+    vigia: { name: 'Vigía', hint: 'Nunca estuviste expuesto y todos lo saben. Sin habilidad, pero tu palabra pesa.' },
   };
 
   let skew = 0;
@@ -31,7 +33,8 @@
   function renderRoster(ul, players, myId) {
     ul.replaceChildren(...players.map((p) => {
       const li = document.createElement('li');
-      li.textContent = p.name + (p.id === myId ? ' (tú)' : '');
+      li.textContent = p.name + (p.id === myId ? ' (tú)' : '') + (p.verified ? ' ✓' : '');
+      if (p.verified) { li.classList.add('verified'); li.title = ROLE.vigia.name + ': verificado sano'; }
       if (!p.connected) li.classList.add('off');
       if (!p.alive) li.classList.add('out');
       return li;
@@ -51,7 +54,7 @@
     if (r.kind === 'end') {
       const lines = [r.winner === 'humans' ? 'Ganan los sanos.' : 'Ganan los infectados.'];
       if (r.text) lines.push(r.text);
-      return lines.concat(r.roles.map((x) => x.name + ': ' + ROLE[x.role].name + (x.alive ? '' : ' (eliminado)')));
+      return lines.concat(r.roles.map((x) => x.name + ': ' + (x.verified ? ROLE.vigia : ROLE[x.role]).name + (x.alive ? '' : ' (eliminado)')));
     }
     return [];
   }
@@ -75,6 +78,19 @@
     if (r.kind === 'reveal_sent') return n + 'le dijiste a ' + r.name + ' que eres ' + ROLE[r.claim].name + '.';
     if (r.kind === 'revealed') return n + r.name + ' te reveló que es ' + ROLE[r.claim].name + '.';
     return '';
+  }
+
+  // Texto público con la composición de roles de la partida.
+  function compText(state) {
+    return state.composition
+      ? 'En la nave: ' + Object.entries(state.composition).filter(([, n]) => n > 0).map(([r, n]) => ROLE[r].name + ' ×' + n).join(' · ') : '';
+  }
+
+  // Texto público con los Vigías (verificados sanos) de la partida; vacío si no hay.
+  function vigiaText(state) {
+    const v = state.players.filter((p) => p.verified);
+    if (!state.composition || !v.length) return '';
+    return (v.length === 1 ? 'Vigía verificado sano: ' : 'Vigías verificados sanos: ') + v.map((p) => p.name + (p.alive ? '' : ' (eliminado)')).join(', ');
   }
 
   // Conexión WebSocket con reconexión automática.
@@ -103,5 +119,5 @@
     return api;
   }
 
-  window.Gnosia = { PHASE_LABEL, PHASE_HINT, ROLE, renderResult, describeReport, syncClock, remaining, fmtTime, renderRoster, connect };
+  window.Gnosia = { compText, vigiaText, PHASE_LABEL, PHASE_HINT, ROLE, renderResult, describeReport, syncClock, remaining, fmtTime, renderRoster, connect };
 })();
