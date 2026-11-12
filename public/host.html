@@ -30,12 +30,16 @@
     </section>
 
     <section id="game" class="stack" hidden>
+      <p id="pausebar" class="pausebar" hidden>Partida en pausa</p>
       <p id="phase" class="phase-name"></p>
       <p id="timer" class="timer"></p>
+      <p id="story" class="story"></p>
       <p id="hint" class="mute big"></p>
+      <p id="comp" class="mute big"></p>
       <div id="result" class="result"></div>
       <ul id="roster-game" class="roster"></ul>
       <div class="actions">
+        <button id="pause">Pausar</button>
         <button id="skip">Saltar fase</button>
         <button id="reset" class="primary" hidden>Nueva partida</button>
       </div>
@@ -68,6 +72,7 @@
       },
     });
 
+    $('#pause').addEventListener('click', () => api.send({ t: state && state.paused ? 'host:resume' : 'host:pause' }));
     $('#skip').addEventListener('click', () => api.send({ t: 'host:skip' }));
     $('#reset').addEventListener('click', () => api.send({ t: 'host:reset' }));
     $('#start').addEventListener('click', () => { $('#msg').textContent = ''; api.send({ t: 'host:start' }); });
@@ -88,15 +93,23 @@
         Gnosia.renderRoster($('#roster-game'), state.players);
         const over = state.phase === 'GAME_OVER';
         const prog = state.progress ? 'Votaron ' + state.progress.done + ' de ' + state.progress.total : '';
-        $('#hint').textContent = prog || Gnosia.PHASE_HINT[state.phase] || '';
+        $('#hint').textContent = state.paused ? '' : (prog || Gnosia.PHASE_HINT[state.phase] || '');
         Gnosia.renderResult($('#result'), state.result);
+        $('#story').textContent = state.story || '';
+        $('#comp').textContent = state.composition
+          ? 'En la nave: ' + Object.entries(state.composition).filter(([, n]) => n > 0).map(([r, n]) => Gnosia.ROLE[r].name + ' ×' + n).join(' · ') : '';
         $('#skip').hidden = over;
+        $('#skip').disabled = !!state.paused;
+        $('#pause').hidden = over;
+        $('#pause').textContent = state.paused ? 'Reanudar' : 'Pausar';
+        $('#pausebar').hidden = !state.paused;
         $('#reset').hidden = !over;
       }
       tick();
     }
 
     function tick() {
+      if (state && state.paused) { $('#timer').textContent = Gnosia.fmtTime(Math.ceil(state.remainingMs / 1000)); return; }
       if (!state || state.phase === 'LOBBY' || !state.phaseEndsAt) { $('#timer').textContent = ''; return; }
       $('#timer').textContent = Gnosia.fmtTime(Gnosia.remaining(state.phaseEndsAt));
     }
