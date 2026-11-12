@@ -36,6 +36,7 @@
       <p id="story" class="story"></p>
       <p id="hint" class="mute big"></p>
       <p id="comp" class="mute big"></p>
+      <p id="vigias" class="vigias big"></p>
       <div id="result" class="result"></div>
       <ul id="roster-game" class="roster"></ul>
       <div class="actions">
@@ -96,8 +97,8 @@
         $('#hint').textContent = state.paused ? '' : (prog || Gnosia.PHASE_HINT[state.phase] || '');
         Gnosia.renderResult($('#result'), state.result);
         $('#story').textContent = state.story || '';
-        $('#comp').textContent = state.composition
-          ? 'En la nave: ' + Object.entries(state.composition).filter(([, n]) => n > 0).map(([r, n]) => Gnosia.ROLE[r].name + ' ×' + n).join(' · ') : '';
+        $('#comp').textContent = Gnosia.compText(state);
+        $('#vigias').textContent = Gnosia.vigiaText(state);
         $('#skip').hidden = over;
         $('#skip').disabled = !!state.paused;
         $('#pause').hidden = over;
