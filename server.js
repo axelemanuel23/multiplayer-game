@@ -13,17 +13,23 @@ const MIN_PLAYERS = 4;
 const MAX_PLAYERS = 12;
 
 // Tabla de roles según cantidad de jugadores (editable).
+// "crew" incluye a los Vigías (ver VIGIA_TABLE): son Tripulantes con una marca pública.
 const ROLE_TABLE = {
-  4: { gnosia: 1, engineer: 1, crew: 2 },
+  4: { gnosia: 1, crew: 3 },
   5: { gnosia: 1, engineer: 1, crew: 3 },
-  6: { gnosia: 1, engineer: 1, guardian: 1, crew: 3 },
-  7: { gnosia: 2, engineer: 1, guardian: 1, crew: 3 },
-  8: { gnosia: 2, engineer: 1, guardian: 1, doctor: 1, crew: 3 },
-  9: { gnosia: 2, engineer: 1, guardian: 1, doctor: 1, crew: 4 },
-  10: { gnosia: 3, engineer: 1, guardian: 1, doctor: 1, crew: 4 },
-  11: { gnosia: 3, engineer: 1, guardian: 1, doctor: 1, crew: 5 },
-  12: { gnosia: 3, engineer: 1, guardian: 1, doctor: 1, crew: 6 },
+  6: { gnosia: 1, engineer: 1, crew: 4 },
+  7: { gnosia: 2, engineer: 1, doctor: 1, crew: 3 },
+  8: { gnosia: 2, engineer: 1, doctor: 1, crew: 4 },
+  9: { gnosia: 2, engineer: 1, doctor: 1, crew: 5 },
+  10: { gnosia: 3, engineer: 1, doctor: 1, guardian: 1, crew: 4 },
+  11: { gnosia: 3, engineer: 1, doctor: 1, guardian: 1, crew: 5 },
+  12: { gnosia: 3, engineer: 1, doctor: 1, guardian: 1, crew: 6 },
 };
+
+// Vigías (personal de a bordo): Tripulantes sin habilidad, verificados como sanos y visibles para todos.
+// Se restan de "crew" (no se suman). Internamente siguen siendo role 'crew' con p.verified = true.
+const VIGIA_TABLE = { 10: 1, 11: 2, 12: 2 };
+const VIGIA_NAME = 'Vigía';
 
 // Duración de cada fase (null = sin temporizador).
 const DURATION = {
@@ -86,6 +92,7 @@ catch (e) { console.warn('Sin narrativas (content/narrativas.json):', e.message)
 const ROLE_NAMES = CONTENT
   ? Object.fromEntries(['crew', 'doctor', 'engineer', 'guardian', 'gnosia'].filter((k) => CONTENT.roles[k]).map((k) => [k, CONTENT.roles[k].nombre]))
   : null;
+if (ROLE_NAMES) ROLE_NAMES.vigia = VIGIA_NAME;
 
 const fill = (tpl, vars) => tpl.replace(/\{(\w+)\}/g, (m, k) => (k in vars ? vars[k] : m));
 const joinNames = (a) => (a.length <= 1 ? a.join('') : a.slice(0, -1).join(', ') + ' y ' + a[a.length - 1]);
@@ -124,9 +131,6 @@ function buildStories(room) {
   };
   room.vars = vars0;
   room.story = fill(draw(room, 'general', CONTENT.general), vars0);
-  // En partidas grandes, parte de los Tripulantes reciben el trasfondo de "personal de a bordo" (solo cambia el texto).
-  const crew = shuffle(ps.filter((p) => p.role === 'crew'));
-  const aBordo = new Set(crew.slice(0, ps.length >= 8 ? Math.ceil(crew.length / 3) : 0).map((p) => p.id));
   for (const p of ps) {
     const vars = { ...vars0 };
     let list, key;
@@ -136,7 +140,7 @@ function buildStories(room) {
       if (allies.length && g.variantes_con_aliados) { list = g.variantes_con_aliados; key = 'story:gnosia_aliados'; vars.aliados = joinNames(allies); }
       else { list = g.variantes; key = 'story:gnosia'; }
     } else {
-      key = aBordo.has(p.id) ? 'crew_a_bordo' : p.role;
+      key = p.verified ? 'crew_a_bordo' : p.role;
       list = CONTENT.roles[key].variantes;
       key = 'story:' + key;
     }
@@ -159,6 +163,16 @@ function createRoom() {
   return room;
 }
 
+// Composición pública: los Vigías se muestran aparte de los Tripulantes comunes.
+// (room.composition no cambia: los infectados no pueden declararse Vigía.)
+function publicComposition(room) {
+  if (!room.composition) return null;
+  const v = [...room.players.values()].filter((p) => p.verified).length;
+  const c = { ...room.composition };
+  if (v) { c.crew -= v; c.vigia = v; }
+  return c;
+}
+
 const aliveList = (room) => [...room.players.values()].filter((p) => p.alive);
 
 function winner(room) {
@@ -174,10 +188,10 @@ function winner(room) {
 function publicState(room) {
   return {
     t: 'state', code: room.code, phase: room.phase, phaseEndsAt: room.phaseEndsAt, now: Date.now(),
-    min: MIN_PLAYERS, max: MAX_PLAYERS, result: room.result, composition: room.composition,
+    min: MIN_PLAYERS, max: MAX_PLAYERS, result: room.result, composition: publicComposition(room),
     paused: room.paused, remainingMs: room.remaining, roleNames: ROLE_NAMES, story: room.phase === 'ROLE_REVEAL' ? room.story : null,
     progress: room.phase === 'VOTE' ? { done: room.votes.size, total: aliveList(room).length } : null,
-    players: [...room.players.values()].map((p) => ({ id: p.id, name: p.name, connected: !!p.ws, alive: p.alive })),
+    players: [...room.players.values()].map((p) => ({ id: p.id, name: p.name, connected: !!p.ws, alive: p.alive, verified: !!p.verified })),
   };
 }
 
@@ -264,7 +278,7 @@ function resolveNight(room) {
 function endGame(room, w) {
   setPhase(room, 'GAME_OVER', {
     kind: 'end', winner: w, text: ev(room, w === 'humans' ? 'victoria_sanos' : 'victoria_infectados'),
-    roles: [...room.players.values()].map((p) => ({ name: p.name, role: p.role, alive: p.alive })),
+    roles: [...room.players.values()].map((p) => ({ name: p.name, role: p.role, alive: p.alive, verified: !!p.verified })),
   });
 }
 
@@ -275,12 +289,13 @@ function assignRoles(room) {
   shuffle(deck);
   room.nights = 0;
   room.composition = { ...ROLE_TABLE[ps.length] };
-  ps.forEach((p, i) => { p.role = deck[i]; p.alive = true; p.reports = []; });
+  ps.forEach((p, i) => { p.role = deck[i]; p.alive = true; p.reports = []; p.verified = false; });
+  shuffle(ps.filter((p) => p.role === 'crew')).slice(0, VIGIA_TABLE[ps.length] || 0).forEach((p) => { p.verified = true; });
 }
 
 // Información PRIVADA: solo se envía al dueño.
 function sendRole(room, p) {
-  const msg = { t: 'you:role', role: p.role, story: p.story || null };
+  const msg = { t: 'you:role', role: p.role, story: p.story || null, verified: !!p.verified };
   if (p.role === 'gnosia') {
     msg.allies = [...room.players.values()].filter((o) => o.role === 'gnosia' && o.id !== p.id).map((o) => o.name);
   }
@@ -424,7 +439,7 @@ const handlers = {
     const room = hostRoom(ws);
     if (!room) return fail(ws, 'FORBIDDEN', 'Solo la pantalla común puede hacerlo.');
     if (room.phase !== 'GAME_OVER') return fail(ws, 'BAD_PHASE', 'La partida no terminó.');
-    for (const p of room.players.values()) { p.role = null; p.alive = true; p.reports = []; }
+    for (const p of room.players.values()) { p.role = null; p.alive = true; p.reports = []; p.verified = false; }
     room.nights = 0;
     room.composition = null;
     setPhase(room, 'LOBBY');
@@ -507,7 +522,7 @@ const handlers = {
     if (!name) return fail(ws, 'BAD_NAME', 'Escribe un nombre.');
     const taken = [...room.players.values()].some((p) => p.name.toLowerCase() === name.toLowerCase());
     if (taken) return fail(ws, 'NAME_TAKEN', 'Ese nombre ya está en uso.');
-    const p = { id: crypto.randomBytes(4).toString('hex'), name, token: token(), ws: null, role: null, alive: true, reports: [] };
+    const p = { id: crypto.randomBytes(4).toString('hex'), name, token: token(), ws: null, role: null, alive: true, reports: [], verified: false };
     room.players.set(p.id, p);
     room.last = Date.now();
     attachPlayer(ws, room, p);
