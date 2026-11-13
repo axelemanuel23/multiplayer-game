@@ -12,8 +12,11 @@ const PUBLIC_URL = process.env.PUBLIC_URL || ''; // ej: https://mijuego.com (si 
 const MIN_PLAYERS = 4;
 const MAX_PLAYERS = 12;
 
-// Tabla de roles según cantidad de jugadores (editable).
-// "crew" incluye a los Vigías (ver VIGIA_TABLE): son Tripulantes con una marca pública.
+// ---------- modos de partida y tablas de roles (editables) ----------
+// En todas las tablas "crew" incluye a los Vigías: son Tripulantes con una marca pública (verificados como sanos).
+// Internamente un Vigía es role 'crew' con p.verified = true. Siempre queda al menos un Tripulante común.
+
+// Modo ESTÁNDAR: reglas fijas.
 const ROLE_TABLE = {
   4: { gnosia: 1, crew: 3 },
   5: { gnosia: 1, engineer: 1, crew: 3 },
@@ -21,19 +24,45 @@ const ROLE_TABLE = {
   7: { gnosia: 2, engineer: 1, doctor: 1, crew: 3 },
   8: { gnosia: 2, engineer: 1, doctor: 1, crew: 4 },
   9: { gnosia: 2, engineer: 1, doctor: 1, crew: 5 },
-  10: { gnosia: 3, engineer: 1, doctor: 1, guardian: 1, crew: 4 },
+  10: { gnosia: 2, engineer: 1, doctor: 1, guardian: 1, crew: 5 },
   11: { gnosia: 3, engineer: 1, doctor: 1, guardian: 1, crew: 5 },
   12: { gnosia: 3, engineer: 1, doctor: 1, guardian: 1, crew: 6 },
 };
-
-// Vigías (personal de a bordo): Tripulantes sin habilidad, verificados como sanos y visibles para todos.
-// Se restan de "crew" (no se suman). Internamente siguen siendo role 'crew' con p.verified = true.
 const VIGIA_TABLE = { 10: 1, 11: 2, 12: 2 };
+
+// Modo PRIMERA PARTIDA: más fácil y con todos los roles, para aprender (la guía se muestra siempre).
+// Roles en el orden Ingeniero, Doctor, Guardián, Vigía.
+const PRIMERA_TABLE = {
+  4: { gnosia: 1, engineer: 1, crew: 2 },
+  5: { gnosia: 1, engineer: 1, doctor: 1, guardian: 1, crew: 1 },
+  6: { gnosia: 1, engineer: 1, doctor: 1, guardian: 1, crew: 2 },
+  7: { gnosia: 2, engineer: 1, doctor: 1, guardian: 1, crew: 2 },
+  8: { gnosia: 2, engineer: 1, doctor: 1, guardian: 1, crew: 3 },
+  9: { gnosia: 2, engineer: 1, doctor: 1, guardian: 1, crew: 4 },
+  10: { gnosia: 2, engineer: 1, doctor: 1, guardian: 1, crew: 5 },
+  11: { gnosia: 2, engineer: 1, doctor: 1, guardian: 1, crew: 6 },
+  12: { gnosia: 2, engineer: 1, doctor: 1, guardian: 1, crew: 7 },
+};
+const PRIMERA_VIGIA = { 4: 1, 6: 1, 7: 1, 8: 2, 9: 2, 10: 2, 11: 1, 12: 1 };
+
+// Modo ROLES ALEATORIOS: k roles sorteados de un pool en cada partida (el Vigía cuenta como un rol del pool).
+// De 10 jugadores en adelante todos los roles ya entran, así que sigue la tabla estándar.
+const POOL_BASE = ['engineer', 'doctor', 'guardian'];
+const RANDOM_TABLE = {
+  4: { gnosia: 1, k: 1, pool: POOL_BASE },
+  5: { gnosia: 1, k: 1, pool: POOL_BASE },
+  6: { gnosia: 1, k: 1, pool: POOL_BASE },
+  7: { gnosia: 2, k: 3, pool: [...POOL_BASE, 'vigia'] },
+  8: { gnosia: 2, k: 3, pool: [...POOL_BASE, 'vigia'] },
+  9: { gnosia: 2, k: 2, pool: [...POOL_BASE, 'vigia'] },
+};
+
+const MODES = ['primera', 'estandar', 'aleatoria'];
 const VIGIA_NAME = 'Vigía';
 
 // Duración de cada fase (null = sin temporizador).
 const DURATION = {
-  ROLE_REVEAL: 60000, DEBATE: 120000, VOTE: 45000, VOTE_RESULT: 10000,
+  GUIA: null, ROLE_REVEAL: 60000, DEBATE: 120000, VOTE: 45000, VOTE_RESULT: 10000,
   NIGHT: 60000, DAWN: 10000, GAME_OVER: null,
 };
 
@@ -53,9 +82,9 @@ function newCode() {
   return c;
 }
 
-function shuffle(a) {
+function shuffle(a, pick = (n) => crypto.randomInt(n)) {
   for (let i = a.length - 1; i > 0; i--) {
-    const j = crypto.randomInt(i + 1);
+    const j = pick(i + 1);
     [a[i], a[j]] = [a[j], a[i]];
   }
   return a;
@@ -89,6 +118,10 @@ async function joinInfo(room, ws) {
 let CONTENT = null;
 try { CONTENT = JSON.parse(fs.readFileSync(path.join(__dirname, 'content', 'narrativas.json'), 'utf8')); }
 catch (e) { console.warn('Sin narrativas (content/narrativas.json):', e.message); }
+// Guía introductoria (content/guia.json). Si falta, la partida arranca sin guía.
+let GUIA = null;
+try { GUIA = JSON.parse(fs.readFileSync(path.join(__dirname, 'content', 'guia.json'), 'utf8')); }
+catch (e) { console.warn('Sin guía (content/guia.json):', e.message); }
 const ROLE_NAMES = CONTENT
   ? Object.fromEntries(['crew', 'doctor', 'engineer', 'guardian', 'gnosia'].filter((k) => CONTENT.roles[k]).map((k) => [k, CONTENT.roles[k].nombre]))
   : null;
@@ -157,7 +190,7 @@ function createRoom() {
     code: newCode(), hostToken: token(), hostWs: null,
     players: new Map(), // id -> { id, name, token, ws, role, alive, investigation }
     phase: 'LOBBY', phaseEndsAt: null, timer: null, result: null,
-    votes: new Map(), night: null, nights: 0, composition: null, bags: {}, vars: null, story: null, paused: false, remaining: null, last: Date.now(),
+    votes: new Map(), night: null, nights: 0, composition: null, bags: {}, vars: null, story: null, paused: false, remaining: null, guide: null, mode: null, last: Date.now(),
   };
   rooms.set(room.code, room);
   return room;
@@ -190,6 +223,10 @@ function publicState(room) {
     t: 'state', code: room.code, phase: room.phase, phaseEndsAt: room.phaseEndsAt, now: Date.now(),
     min: MIN_PLAYERS, max: MAX_PLAYERS, result: room.result, composition: publicComposition(room),
     paused: room.paused, remainingMs: room.remaining, roleNames: ROLE_NAMES, story: room.phase === 'ROLE_REVEAL' ? room.story : null,
+    mode: room.mode,
+    preview: room.phase === 'LOBBY' && room.players.size >= MIN_PLAYERS && room.players.size <= MAX_PLAYERS
+      ? Object.fromEntries(MODES.map((k) => [k, modePreview(k, room.players.size)])) : null,
+    guide: room.phase === 'GUIA' && room.guide ? { step: room.guide.step, total: room.guide.pages.length, ...room.guide.pages[room.guide.step] } : null,
     progress: room.phase === 'VOTE' ? { done: room.votes.size, total: aliveList(room).length } : null,
     players: [...room.players.values()].map((p) => ({ id: p.id, name: p.name, connected: !!p.ws, alive: p.alive, verified: !!p.verified })),
   };
@@ -222,6 +259,7 @@ function setPhase(room, phase, result = null) {
 
 function advance(room) {
   switch (room.phase) {
+    case 'GUIA': return guideStep(room, 1);
     case 'ROLE_REVEAL': return setPhase(room, 'DEBATE');
     case 'DEBATE': return setPhase(room, 'VOTE');
     case 'VOTE': return resolveVote(room);
@@ -282,15 +320,74 @@ function endGame(room, w) {
   });
 }
 
-function assignRoles(room) {
+// Guía introductoria: páginas filtradas por los roles que existen en la partida (la composición es pública).
+function buildGuide(room, enabled) {
+  room.guide = null;
+  if (!enabled || !GUIA || !Array.isArray(GUIA.paginas)) return;
+  const comp = publicComposition(room);
+  const vars = { nave: room.vars ? room.vars.nave : 'nave', n_tripulantes: room.players.size, n_infectados: comp.gnosia };
+  const pages = GUIA.paginas.filter((p) => !p.rol || comp[p.rol] > 0).map((p) => {
+    const v = { ...vars, rol: p.rol ? (ROLE_NAMES && ROLE_NAMES[p.rol]) || p.rol : '' };
+    return { titulo: fill(p.titulo, v), lineas: p.lineas.map((l) => fill(l, v)) };
+  });
+  if (pages.length) room.guide = { step: 0, pages };
+}
+
+// Avanza o retrocede una página; al pasar la última se empieza la lectura de roles.
+function guideStep(room, d) {
+  if (room.phase !== 'GUIA' || !room.guide) return;
+  const s = room.guide.step + d;
+  if (s >= room.guide.pages.length) return beginRoleReveal(room);
+  if (s < 0) return;
+  room.guide.step = s;
+  broadcast(room);
+}
+
+// Los roles se envían a los celulares recién aquí (no durante la guía).
+function beginRoleReveal(room) {
+  room.guide = null;
+  for (const p of room.players.values()) sendRole(room, p);
+  setPhase(room, 'ROLE_REVEAL');
+}
+
+// Composición de una partida de n jugadores en un modo: { table: roles internos, vigias: cuántos Tripulantes son Vigías }.
+// `pick` es el sorteo (inyectable para que el simulador use su propia semilla).
+function pickComposition(mode, n, pick) {
+  if (mode === 'aleatoria' && RANDOM_TABLE[n]) {
+    const r = RANDOM_TABLE[n];
+    const picked = shuffle([...r.pool], pick).slice(0, r.k);
+    const table = { gnosia: r.gnosia };
+    for (const x of ['engineer', 'doctor', 'guardian']) if (picked.includes(x)) table[x] = 1;
+    table.crew = n - Object.values(table).reduce((a, b) => a + b, 0); // el Vigía es un Tripulante marcado
+    return { table, vigias: picked.includes('vigia') ? 1 : 0 };
+  }
+  if (mode === 'primera') return { table: { ...PRIMERA_TABLE[n] }, vigias: PRIMERA_VIGIA[n] || 0 };
+  return { table: { ...ROLE_TABLE[n] }, vigias: VIGIA_TABLE[n] || 0 };
+}
+
+// Vista previa pública de un modo para n jugadores (se muestra en el lobby, sin sortear nada).
+function modePreview(mode, n) {
+  if (mode === 'aleatoria' && RANDOM_TABLE[n]) return { infected: RANDOM_TABLE[n].gnosia, azar: { k: RANDOM_TABLE[n].k, pool: RANDOM_TABLE[n].pool } };
+  const t = mode === 'primera' ? PRIMERA_TABLE[n] : ROLE_TABLE[n];
+  if (!t) return null;
+  const v = mode === 'primera' ? PRIMERA_VIGIA[n] || 0 : VIGIA_TABLE[n] || 0;
+  return {
+    infected: t.gnosia, roles: ['engineer', 'doctor', 'guardian'].filter((r) => t[r]), vigias: v, crew: t.crew - v,
+    ...(mode === 'aleatoria' ? { igualEstandar: true } : {}),
+  };
+}
+
+function assignRoles(room, mode) {
   const ps = [...room.players.values()];
+  const { table, vigias } = pickComposition(mode, ps.length);
   const deck = [];
-  for (const [role, n] of Object.entries(ROLE_TABLE[ps.length])) for (let i = 0; i < n; i++) deck.push(role);
+  for (const [role, n] of Object.entries(table)) for (let i = 0; i < n; i++) deck.push(role);
   shuffle(deck);
+  room.mode = mode;
   room.nights = 0;
-  room.composition = { ...ROLE_TABLE[ps.length] };
+  room.composition = { ...table };
   ps.forEach((p, i) => { p.role = deck[i]; p.alive = true; p.reports = []; p.verified = false; });
-  shuffle(ps.filter((p) => p.role === 'crew')).slice(0, VIGIA_TABLE[ps.length] || 0).forEach((p) => { p.verified = true; });
+  shuffle(ps.filter((p) => p.role === 'crew')).slice(0, vigias).forEach((p) => { p.verified = true; });
 }
 
 // Información PRIVADA: solo se envía al dueño.
@@ -394,16 +491,26 @@ const handlers = {
     send(ws, publicState(room));
   },
 
-  'host:start'(ws) {
+  'host:start'(ws, m) {
     const c = ws.ctx;
     if (!c || c.kind !== 'host') return fail(ws, 'FORBIDDEN', 'Solo la pantalla común puede iniciar.');
     const room = c.room;
     if (room.phase !== 'LOBBY') return fail(ws, 'BAD_PHASE', 'La partida ya empezó.');
     if (room.players.size < MIN_PLAYERS) return fail(ws, 'NOT_ENOUGH', `Hacen falta al menos ${MIN_PLAYERS} jugadores.`);
-    assignRoles(room);
+    const mode = MODES.includes(m.mode) ? m.mode : 'estandar';
+    assignRoles(room, mode);
     buildStories(room);
-    for (const p of room.players.values()) sendRole(room, p);
-    setPhase(room, 'ROLE_REVEAL');
+    buildGuide(room, mode === 'primera' ? true : m.guide !== false); // la Primera partida siempre muestra la guía
+    if (room.guide) setPhase(room, 'GUIA');
+    else beginRoleReveal(room);
+  },
+
+  // Guía: 'next' / 'prev' (saltarla entera es host:skip).
+  'host:guide'(ws, m) {
+    const room = hostRoom(ws);
+    if (!room) return fail(ws, 'FORBIDDEN', 'Solo la pantalla común puede hacerlo.');
+    if (room.phase !== 'GUIA') return fail(ws, 'BAD_PHASE', 'No hay guía en curso.');
+    guideStep(room, m.dir === 'prev' ? -1 : 1);
   },
 
   // Pausa: congela el temporizador de la fase y bloquea votos y acciones hasta reanudar.
@@ -432,6 +539,7 @@ const handlers = {
   'host:skip'(ws) {
     const room = hostRoom(ws);
     if (!room) return fail(ws, 'FORBIDDEN', 'Solo la pantalla común puede hacerlo.');
+    if (room.phase === 'GUIA') return beginRoleReveal(room);
     if (!room.paused && room.phase !== 'LOBBY' && room.phase !== 'GAME_OVER') advance(room);
   },
 
@@ -442,6 +550,8 @@ const handlers = {
     for (const p of room.players.values()) { p.role = null; p.alive = true; p.reports = []; p.verified = false; }
     room.nights = 0;
     room.composition = null;
+    room.guide = null;
+    room.mode = null;
     setPhase(room, 'LOBBY');
   },
 
@@ -536,7 +646,7 @@ const handlers = {
     if (!p) return fail(ws, 'SESSION_LOST', 'No se pudo retomar tu sesión.');
     attachPlayer(ws, room, p);
     send(ws, { t: 'player:joined', code: room.code, playerId: p.id, token: p.token, name: p.name });
-    if (p.role) sendRole(room, p);
+    if (p.role && room.phase !== 'GUIA') sendRole(room, p);
     if (p.reports.length) send(ws, { t: 'you:reports', reports: p.reports });
     broadcast(room);
     if (room.phase === 'NIGHT' && p.alive) sendNight(room, p);
@@ -602,7 +712,12 @@ setInterval(() => {
   }
 }, 10 * 60 * 1000).unref();
 
-server.listen(PORT, '0.0.0.0', () => {
-  console.log(`Pantalla común: http://localhost:${PORT}/host`);
-  console.log(`Los celulares entran por: http://${lanIp()}:${PORT}/play`);
-});
+// Las tablas y la composición por modo se exportan para el simulador de balance (test/simulate.js); solo se abre el puerto al ejecutar el servidor.
+module.exports = { ROLE_TABLE, VIGIA_TABLE, PRIMERA_TABLE, PRIMERA_VIGIA, RANDOM_TABLE, MODES, pickComposition };
+
+if (require.main === module) {
+  server.listen(PORT, '0.0.0.0', () => {
+    console.log(`Pantalla común: http://localhost:${PORT}/host`);
+    console.log(`Los celulares entran por: http://${lanIp()}:${PORT}/play`);
+  });
+}
