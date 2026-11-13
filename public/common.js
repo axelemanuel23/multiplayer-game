@@ -1,6 +1,7 @@
 (function () {
   const PHASE_LABEL = {
     LOBBY: 'Esperando jugadores',
+    GUIA: 'Cómo se juega',
     ROLE_REVEAL: 'Revisen su rol en el celular',
     DEBATE: 'Debate',
     VOTE: 'Votación',
@@ -80,6 +81,19 @@
     return '';
   }
 
+  const MODE_LABEL = { primera: 'Primera partida', estandar: 'Estándar', aleatoria: 'Roles aleatorios' };
+
+  // Vista previa de un modo en el lobby: qué roles tendría con la cantidad de jugadores actual.
+  function previewText(pv) {
+    if (!pv) return '';
+    const inf = pv.infected + (pv.infected === 1 ? ' infectado' : ' infectados');
+    if (pv.azar) return inf + ' + ' + pv.azar.k + (pv.azar.k === 1 ? ' rol' : ' roles') + ' al azar entre ' + pv.azar.pool.map((r) => ROLE[r].name).join(', ');
+    const parts = [inf].concat(pv.roles.map((r) => ROLE[r].name));
+    if (pv.vigias) parts.push(pv.vigias + (pv.vigias === 1 ? ' Vigía' : ' Vigías'));
+    parts.push(pv.crew + (pv.crew === 1 ? ' Tripulante' : ' Tripulantes'));
+    return parts.join(' · ') + (pv.igualEstandar ? ' (igual al estándar)' : '');
+  }
+
   // Texto público con la composición de roles de la partida.
   function compText(state) {
     return state.composition
@@ -119,5 +133,5 @@
     return api;
   }
 
-  window.Gnosia = { compText, vigiaText, PHASE_LABEL, PHASE_HINT, ROLE, renderResult, describeReport, syncClock, remaining, fmtTime, renderRoster, connect };
+  window.Gnosia = { MODE_LABEL, previewText, compText, vigiaText, PHASE_LABEL, PHASE_HINT, ROLE, renderResult, describeReport, syncClock, remaining, fmtTime, renderRoster, connect };
 })();
