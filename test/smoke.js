@@ -11,13 +11,15 @@ const all = (ws, t) => ws.msgs.filter((m) => m.t === t);
 const tx = (ws, m) => ws.send(JSON.stringify(m));
 const assert = (c, msg) => { if (!c) { console.error('FALLÓ:', msg); process.exit(1); } console.log('ok -', msg); };
 
-async function newGame(names) {
+async function newGame(names, opts = {}) {
   const host = await open(); tx(host, { t: 'host:create' }); await wait(250);
   const code = last(host, 'host:created').code;
   const ps = [];
   for (const n of names) { const p = await open(); tx(p, { t: 'player:join', code, name: n }); ps.push(p); }
   await wait(250);
-  tx(host, { t: 'host:start' }); await wait(250);
+  tx(host, { t: 'host:start', guide: false, ...(opts.mode ? { mode: opts.mode } : {}) }); await wait(250);
+  // La Primera partida siempre muestra la guía: se salta para llegar a los roles.
+  if (last(host, 'state').phase === 'GUIA') { tx(host, { t: 'host:skip' }); await wait(250); }
   const g = { host, code, ps, names };
   g.role = (i) => last(ps[i], 'you:role').role;
   g.id = (i) => last(ps[i], 'player:joined').playerId;
@@ -93,10 +95,10 @@ async function newGame(names) {
   const r8 = n8.map((_, i) => g.role(i));
   const idx = (r) => r8.map((x, i) => (x === r ? i : -1)).filter((i) => i >= 0);
   const [G1, G2] = idx('gnosia'), GD = idx('guardian')[0], DR = idx('doctor')[0], EN = idx('engineer')[0], cr = idx('crew');
-  assert(idx('gnosia').length === 3 && GD !== undefined && DR !== undefined && cr.length === 4, 'tabla de 10: 3 Infectados, Guardián, Doctor, Ingeniero y 4 Tripulantes');
+  assert(idx('gnosia').length === 2 && GD !== undefined && DR !== undefined && cr.length === 5, 'tabla estándar de 10: 2 Infectados, Guardián, Doctor, Ingeniero y 5 Tripulantes');
   const vs = g.state().players.filter((p) => p.verified);
   assert(vs.length === 1 && cr.map((i) => n8[i]).includes(vs[0].name), 'con 10 hay 1 Vigía público y es un Tripulante (nunca un infectado)');
-  assert(g.state().composition.crew === 3 && g.state().composition.vigia === 1, 'la composición pública separa al Vigía de los Tripulantes');
+  assert(g.state().composition.crew === 4 && g.state().composition.vigia === 1, 'la composición pública separa al Vigía de los Tripulantes');
   assert(last(g.ps[n8.indexOf(vs[0].name)], 'you:role').verified === true && last(g.ps[G1], 'you:role').verified === false, 'solo el Vigía recibe la marca verified en su rol');
   assert(!g.ps[G1].msgs.some((m) => m.t === 'night:prompt' && m.claims && m.claims.includes('vigia')), 'los infectados no pueden declararse Vigía');
 
@@ -147,7 +149,7 @@ async function newGame(names) {
   g = await newGame(names);
   const seen = new Set();
   for (let k = 0; k < 7; k++) {
-    if (k > 0) { tx(g.host, { t: 'host:start' }); await wait(250); }
+    if (k > 0) { tx(g.host, { t: 'host:start', guide: false }); await wait(250); }
     seen.add(g.state().story);
     const rs = names.map((_, i) => g.role(i));
     const gx = rs.indexOf('gnosia');
@@ -159,7 +161,7 @@ async function newGame(names) {
   assert(seen.size === 7, '7 partidas seguidas usan 7 narrativas generales distintas');
 
   // --- Tabla completa: sin roles especiales con 4, Vigías según la tabla ---
-  const expected = { 4: [1, 0, 0, 0, 0], 5: [1, 1, 0, 0, 0], 6: [1, 1, 0, 0, 0], 7: [2, 1, 1, 0, 0], 8: [2, 1, 1, 0, 0], 9: [2, 1, 1, 0, 0], 10: [3, 1, 1, 1, 1], 11: [3, 1, 1, 1, 2], 12: [3, 1, 1, 1, 2] };
+  const expected = { 4: [1, 0, 0, 0, 0], 5: [1, 1, 0, 0, 0], 6: [1, 1, 0, 0, 0], 7: [2, 1, 1, 0, 0], 8: [2, 1, 1, 0, 0], 9: [2, 1, 1, 0, 0], 10: [2, 1, 1, 1, 1], 11: [3, 1, 1, 1, 2], 12: [3, 1, 1, 1, 2] };
   for (const n of Object.keys(expected).map(Number)) {
     const nm = Array.from({ length: n }, (_, i) => 'P' + (i + 1));
     g = await newGame(nm);
@@ -169,6 +171,112 @@ async function newGame(names) {
     assert(JSON.stringify(got) === JSON.stringify(expected[n]) && c('crew') === n - got[0] - got[1] - got[2] - got[3], `tabla de ${n}: infectados/ingeniero/doctor/guardián/vigías = ${got.join('/')}`);
     const vnames = g.state().players.filter((p) => p.verified).map((p) => p.name);
     assert(vnames.every((v) => rr[nm.indexOf(v)] === 'crew'), `con ${n} los Vigías son siempre Tripulantes`);
+  }
+
+  // --- Guía introductoria: solo la pantalla común, saltable, sin roles hasta terminarla ---
+  async function lobbyOf(nm) {
+    const host = await open(); tx(host, { t: 'host:create' }); await wait(250);
+    const code = last(host, 'host:created').code; const ps = [];
+    for (const n of nm) { const p = await open(); tx(p, { t: 'player:join', code, name: n }); ps.push(p); }
+    await wait(250);
+    return { host, code, ps };
+  }
+  {
+    const L = await lobbyOf(names);
+    tx(L.host, { t: 'host:start' }); await wait(250);
+    let st = last(L.host, 'state');
+    assert(st.phase === 'GUIA' && st.guide && st.guide.step === 0 && st.guide.total >= 5 && st.phaseEndsAt === null, 'con guía: la partida arranca en GUIA, sin temporizador');
+    assert(L.ps.every((p) => !last(p, 'you:role')), 'durante la guía los celulares aún no reciben su rol');
+    assert(st.composition && st.composition.gnosia === 1 && st.story === null, 'durante la guía la composición ya es pública, pero no la narrativa');
+    tx(L.host, { t: 'host:guide', dir: 'prev' }); await wait(150);
+    assert(last(L.host, 'state').guide.step === 0, 'no se puede retroceder antes de la primera página');
+    tx(L.ps[0], { t: 'host:guide', dir: 'next' }); await wait(150);
+    assert(last(L.ps[0], 'error').code === 'FORBIDDEN' && last(L.host, 'state').guide.step === 0, 'un celular no puede avanzar la guía');
+    const total = st.guide.total; const titles = [st.guide.titulo]; const lines = [...st.guide.lineas];
+    for (let i = 1; i < total; i++) {
+      tx(L.host, { t: 'host:guide', dir: 'next' }); await wait(120);
+      st = last(L.host, 'state');
+      assert(st.phase === 'GUIA' && st.guide.step === i, `guía: página ${i + 1} de ${total}`);
+      titles.push(st.guide.titulo); lines.push(...st.guide.lineas);
+    }
+    assert(titles.some((t) => /Ingeniero/.test(t)) && titles.some((t) => /Infectado/.test(t)), 'la guía explica los roles que hay en la partida');
+    assert(!titles.some((t) => /Doctor|Bioseguridad|Vigía/.test(t)), 'con 5 jugadores la guía no explica roles que no existen');
+    assert(lines.concat(titles).every((x) => !/[{}]/.test(x)) && /\S/.test(lines[0]), 'la guía no tiene marcadores sin reemplazar');
+    assert(!JSON.stringify(st).includes('"role"'), 'la guía no filtra roles de jugadores');
+    // reconexión en medio de la guía: sigue sin recibir el rol
+    const mid = await open();
+    tx(mid, { t: 'player:resume', code: L.code, token: last(L.ps[0], 'player:joined').token }); await wait(200);
+    assert(!last(mid, 'you:role') && last(mid, 'state').phase === 'GUIA', 'reconectar durante la guía no revela el rol antes de tiempo');
+    tx(L.host, { t: 'host:guide', dir: 'next' }); await wait(250);
+    assert(last(L.host, 'state').phase === 'ROLE_REVEAL' && last(mid, 'you:role') && last(L.ps[1], 'you:role'), 'al terminar la guía empieza la lectura de roles y llegan los roles');
+  }
+  {
+    const n10 = ['A1', 'B2', 'C3', 'D4', 'E5', 'F6', 'G7', 'H8', 'I9', 'J10'];
+    const L = await lobbyOf(n10);
+    tx(L.host, { t: 'host:start' }); await wait(250);
+    const total = last(L.host, 'state').guide.total; const titles = [last(L.host, 'state').guide.titulo];
+    for (let i = 1; i < total; i++) { tx(L.host, { t: 'host:guide', dir: 'next' }); await wait(100); titles.push(last(L.host, 'state').guide.titulo); }
+    assert(['Ingeniero', 'Doctor', 'Bioseguridad', 'Vigía', 'Infectado'].every((r) => titles.some((t) => t.includes(r))), 'con 10 jugadores la guía incluye Ingeniero, Doctor, Guardián, Vigía e Infectado');
+    // saltar la guía entera
+    const L2 = await lobbyOf(names);
+    tx(L2.host, { t: 'host:start' }); await wait(250);
+    tx(L2.host, { t: 'host:skip' }); await wait(250);
+    assert(last(L2.host, 'state').phase === 'ROLE_REVEAL' && L2.ps.every((p) => last(p, 'you:role')), 'saltar la guía pasa directo a la lectura de roles');
+    tx(L2.host, { t: 'host:skip' }); await wait(200);
+    assert(last(L2.host, 'state').phase === 'DEBATE', 'después de saltar la guía el flujo sigue normal');
+  }
+
+  // --- Modos de partida: Primera partida, Estándar y Roles aleatorios ---
+  const nmN = (n) => Array.from({ length: n }, (_, i) => 'P' + (i + 1));
+  const compOf = (gm, nm) => {
+    const rr = nm.map((_, i) => gm.role(i));
+    const c = (r) => rr.filter((x) => x === r).length;
+    const vig = gm.state().players.filter((p) => p.verified);
+    return { got: [c('gnosia'), c('engineer'), c('doctor'), c('guardian'), vig.length], plain: c('crew') - vig.length, vig, rr };
+  };
+  {
+    // Vista previa en el lobby (sin sortear nada) y modo inválido = estándar
+    const L5 = await lobbyOf(names);
+    const pv = last(L5.host, 'state').preview;
+    assert(pv && pv.primera.infected === 1 && pv.primera.roles.join() === 'engineer,doctor,guardian' && pv.estandar.roles.join() === 'engineer' && pv.aleatoria.azar.k === 1 && !pv.aleatoria.azar.pool.includes('vigia'),
+      'el lobby muestra la vista previa de los tres modos (con 5: sin Vigía en el pool del sorteo)');
+    const L3 = await lobbyOf(['Ana', 'Beto', 'Cami']);
+    assert(last(L3.host, 'state').preview === null, 'con menos del mínimo de jugadores no hay vista previa');
+    const L10 = await lobbyOf(nmN(10));
+    assert(last(L10.host, 'state').preview.aleatoria.igualEstandar === true, 'con 10 o más, el modo aleatorio se muestra como igual al estándar');
+    tx(L5.host, { t: 'host:start', mode: 'primera', guide: false }); await wait(250);
+    assert(last(L5.host, 'state').phase === 'GUIA' && last(L5.host, 'state').mode === 'primera' && last(L5.host, 'state').preview === null, 'la Primera partida muestra la guía aunque se pida sin ella (y sin vista previa en juego)');
+    g = await newGame(names, { mode: 'xyz' });
+    assert(g.state().mode === 'estandar', 'un modo desconocido cae en el estándar');
+  }
+  const primeraT = { 4: [1, 1, 0, 0, 1], 5: [1, 1, 1, 1, 0], 6: [1, 1, 1, 1, 1], 7: [2, 1, 1, 1, 1], 8: [2, 1, 1, 1, 2], 9: [2, 1, 1, 1, 2], 10: [2, 1, 1, 1, 2], 11: [2, 1, 1, 1, 1], 12: [2, 1, 1, 1, 1] };
+  for (const n of Object.keys(primeraT).map(Number)) {
+    const nm = nmN(n);
+    g = await newGame(nm, { mode: 'primera' });
+    const { got, plain, vig, rr } = compOf(g, nm);
+    assert(JSON.stringify(got) === JSON.stringify(primeraT[n]) && plain >= 1 && vig.every((v) => rr[nm.indexOf(v.name)] === 'crew'),
+      `Primera partida con ${n}: infectados/ing/doc/gua/vigías = ${got.join('/')} y al menos un Tripulante común`);
+  }
+  // Roles aleatorios: restricciones por cantidad y variedad entre partidas
+  const REGLA = { 4: [1, 1, false], 5: [1, 1, false], 6: [1, 1, false], 7: [2, 3, true], 8: [2, 3, true], 9: [2, 2, true] };
+  for (const n of [4, 5, 6, 7, 8, 9]) {
+    const nm = nmN(n); const seenKeys = new Set(); let ok = true; let always = true;
+    for (let k = 0; k < 8; k++) {
+      g = await newGame(nm, { mode: 'aleatoria' });
+      const { got, plain } = compOf(g, nm);
+      const [inf, roles, conVigia] = REGLA[n];
+      const nRoles = got[1] + got[2] + got[3] + got[4];
+      if (got[0] !== inf || nRoles !== roles || plain < 1 || (!conVigia && got[4] !== 0)) ok = false;
+      seenKeys.add(got.join('/'));
+    }
+    assert(ok, `Roles aleatorios con ${n}: siempre ${REGLA[n][0]} infectado(s) y ${REGLA[n][1]} rol(es)${REGLA[n][2] ? '' : ' (sin Vigía)'}, con un Tripulante común`);
+    assert(seenKeys.size >= 2, `Roles aleatorios con ${n}: la composición cambia entre partidas`);
+  }
+  for (const n of [10, 11, 12]) {
+    const nm = nmN(n);
+    g = await newGame(nm, { mode: 'aleatoria' });
+    const { got } = compOf(g, nm);
+    assert(JSON.stringify(got) === JSON.stringify({ 10: [2, 1, 1, 1, 1], 11: [3, 1, 1, 1, 2], 12: [3, 1, 1, 1, 2] }[n]), `Roles aleatorios con ${n} = estándar (${got.join('/')})`);
   }
 
   // --- Pausa ---
