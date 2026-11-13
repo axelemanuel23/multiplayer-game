@@ -23,7 +23,28 @@
         <h2 id="count">Jugadores conectados</h2>
         <ul id="roster-lobby" class="roster"></ul>
       </div>
+      <div class="stack">
+        <h2>Modo de partida</h2>
+        <div id="modes" class="modes" role="radiogroup" aria-label="Modo de partida">
+          <button type="button" class="mode" role="radio" data-mode="primera" aria-checked="false">
+            <span class="mode-name">Primera partida</span>
+            <span class="mode-desc">Más fácil, con guía y todos los roles. Ideal para aprender.</span>
+            <span class="mode-prev"></span>
+          </button>
+          <button type="button" class="mode" role="radio" data-mode="estandar" aria-checked="false">
+            <span class="mode-name">Estándar</span>
+            <span class="mode-desc">Reglas fijas y resultados parejos entre partidas.</span>
+            <span class="mode-prev"></span>
+          </button>
+          <button type="button" class="mode" role="radio" data-mode="aleatoria" aria-checked="false">
+            <span class="mode-name">Roles aleatorios</span>
+            <span class="mode-desc">Los roles se sortean en cada partida. Algunas salen más difíciles que otras.</span>
+            <span class="mode-prev"></span>
+          </button>
+        </div>
+      </div>
       <div class="actions">
+        <label class="check"><input type="checkbox" id="guide-opt" checked> Mostrar guía de cómo jugar</label>
         <button id="start" class="primary" disabled>Iniciar partida</button>
         <p id="msg" class="error" role="alert"></p>
       </div>
@@ -32,7 +53,18 @@
     <section id="game" class="stack" hidden>
       <p id="pausebar" class="pausebar" hidden>Partida en pausa</p>
       <p id="phase" class="phase-name"></p>
+      <p id="modeline" class="mute big"></p>
       <p id="timer" class="timer"></p>
+      <div id="guide" class="guide" hidden>
+        <p id="guide-step" class="mute big"></p>
+        <h2 id="guide-title" class="guide-title"></h2>
+        <ul id="guide-lines" class="guide-lines"></ul>
+        <div class="actions">
+          <button id="guide-prev">Anterior</button>
+          <button id="guide-next" class="primary">Siguiente</button>
+          <button id="guide-skip">Saltar guía</button>
+        </div>
+      </div>
       <p id="story" class="story"></p>
       <p id="hint" class="mute big"></p>
       <p id="comp" class="mute big"></p>
@@ -76,7 +108,31 @@
     $('#pause').addEventListener('click', () => api.send({ t: state && state.paused ? 'host:resume' : 'host:pause' }));
     $('#skip').addEventListener('click', () => api.send({ t: 'host:skip' }));
     $('#reset').addEventListener('click', () => api.send({ t: 'host:reset' }));
-    $('#start').addEventListener('click', () => { $('#msg').textContent = ''; api.send({ t: 'host:start' }); });
+    const GUIDE_KEY = 'gnosia:guide', MODE_KEY = 'gnosia:mode';
+    let mode = localStorage.getItem(MODE_KEY);
+    if (!Gnosia.MODE_LABEL[mode]) mode = 'estandar';
+    let guidePref = localStorage.getItem(GUIDE_KEY) !== 'off';
+
+    // La Primera partida siempre muestra la guía: la casilla queda marcada y bloqueada.
+    function applyMode() {
+      document.querySelectorAll('.mode').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.mode === mode)));
+      $('#guide-opt').disabled = mode === 'primera';
+      $('#guide-opt').checked = mode === 'primera' ? true : guidePref;
+    }
+    document.querySelectorAll('.mode').forEach((b) => b.addEventListener('click', () => {
+      mode = b.dataset.mode; localStorage.setItem(MODE_KEY, mode); applyMode();
+    }));
+    $('#guide-opt').addEventListener('change', (e) => { guidePref = e.target.checked; localStorage.setItem(GUIDE_KEY, guidePref ? 'on' : 'off'); });
+    applyMode();
+    $('#start').addEventListener('click', () => { $('#msg').textContent = ''; api.send({ t: 'host:start', mode, guide: $('#guide-opt').checked }); });
+    $('#guide-prev').addEventListener('click', () => api.send({ t: 'host:guide', dir: 'prev' }));
+    $('#guide-next').addEventListener('click', () => api.send({ t: 'host:guide', dir: 'next' }));
+    $('#guide-skip').addEventListener('click', () => api.send({ t: 'host:skip' }));
+    document.addEventListener('keydown', (e) => {
+      if (!state || state.phase !== 'GUIA') return;
+      if (e.key === 'ArrowRight') api.send({ t: 'host:guide', dir: 'next' });
+      else if (e.key === 'ArrowLeft') api.send({ t: 'host:guide', dir: 'prev' });
+    });
 
     function render() {
       const inLobby = state.phase === 'LOBBY';
@@ -86,22 +142,37 @@
         const n = state.players.length;
         $('#count').textContent = n + (n === 1 ? ' jugador conectado' : ' jugadores conectados');
         Gnosia.renderRoster($('#roster-lobby'), state.players);
+        document.querySelectorAll('.mode').forEach((b) => {
+          const t = Gnosia.previewText(state.preview && state.preview[b.dataset.mode]);
+          b.querySelector('.mode-prev').textContent = t ? 'Con ' + n + ' jugadores: ' + t : '';
+        });
         $('#start').disabled = n < state.min;
         if (n < state.min) $('#msg').textContent = 'Faltan ' + (state.min - n) + ' jugadores como mínimo.';
         else $('#msg').textContent = '';
       } else {
         $('#phase').textContent = Gnosia.PHASE_LABEL[state.phase] || state.phase;
+        $('#modeline').textContent = state.mode ? 'Modo: ' + Gnosia.MODE_LABEL[state.mode] : '';
         Gnosia.renderRoster($('#roster-game'), state.players);
         const over = state.phase === 'GAME_OVER';
+        const inGuide = state.phase === 'GUIA' && !!state.guide;
+        $('#guide').hidden = !inGuide;
+        if (inGuide) {
+          const g = state.guide;
+          $('#guide-step').textContent = 'Guía ' + (g.step + 1) + ' de ' + g.total;
+          $('#guide-title').textContent = g.titulo;
+          $('#guide-lines').replaceChildren(...g.lineas.map((t) => { const li = document.createElement('li'); li.textContent = t; return li; }));
+          $('#guide-prev').disabled = g.step === 0;
+          $('#guide-next').textContent = g.step === g.total - 1 ? 'Empezar' : 'Siguiente';
+        }
         const prog = state.progress ? 'Votaron ' + state.progress.done + ' de ' + state.progress.total : '';
         $('#hint').textContent = state.paused ? '' : (prog || Gnosia.PHASE_HINT[state.phase] || '');
         Gnosia.renderResult($('#result'), state.result);
         $('#story').textContent = state.story || '';
-        $('#comp').textContent = Gnosia.compText(state);
-        $('#vigias').textContent = Gnosia.vigiaText(state);
-        $('#skip').hidden = over;
+        $('#comp').textContent = inGuide ? '' : Gnosia.compText(state);
+        $('#vigias').textContent = inGuide ? '' : Gnosia.vigiaText(state);
+        $('#skip').hidden = over || inGuide;
         $('#skip').disabled = !!state.paused;
-        $('#pause').hidden = over;
+        $('#pause').hidden = over || inGuide;
         $('#pause').textContent = state.paused ? 'Reanudar' : 'Pausar';
         $('#pausebar').hidden = !state.paused;
         $('#reset').hidden = !over;
