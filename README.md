@@ -1,33 +1,26 @@
 # Gnosia LAN
 
-Pantalla común (PC) + celulares. El servidor es autoritativo: solo envía a cada cliente lo que le corresponde.
+Juego de deducción social para jugar en persona: pantalla común (PC) + celulares. Servidor autoritativo en memoria. Resumen completo del diseño y las reglas en `RESUMEN_PROYECTO.md`.
 
 ## Uso
 ```
 npm install
 npm start
 ```
-1. Abre `http://localhost:3000/host` en la PC (pantalla común): aparece el QR y el código.
+1. Abre `http://localhost:3000/host` en la PC (pantalla común): aparecen el QR y el código de sala.
 2. Los celulares (mismo Wi-Fi) escanean el QR o entran a `http://<IP-de-la-PC>:3000/play`.
-3. Cuando haya al menos 4 jugadores, inicia desde la pantalla común.
+3. Con 4 jugadores o más, elige el modo en la pantalla común e inicia la partida:
+   - **Primera partida:** más fácil, con todos los roles y la guía siempre activada. Para aprender.
+   - **Estándar:** reglas fijas, resultados parejos entre partidas.
+   - **Roles aleatorios:** con 4 a 9 jugadores los roles se sortean en cada partida (de 10 en adelante es igual al estándar).
+   Las tablas de cada modo están en `server.js` (`ROLE_TABLE`, `PRIMERA_TABLE`, `RANDOM_TABLE`).
 
-Variables: `PORT` (3000) y `PUBLIC_URL` (si lo publicas en internet, para que el QR apunte al dominio).
+Variables de entorno: `PORT` (3000) y `PUBLIC_URL` (opcional; si no, el QR usa la dirección con la que se abrió `/host`).
 
-## Protocolo (WebSocket `/ws`, mensajes JSON `{ t: tipo, ... }`)
+Estructura: `server.js` (servidor y reglas), `content/narrativas.json` (textos de ambientación), `content/guia.json` (guía introductoria que se muestra antes de la partida; se puede saltar o desactivar desde el lobby), `public/` (pantalla común y celular), `test/smoke.js` (pruebas).
 
-| Dirección | Mensaje | Contenido |
-|---|---|---|
-| host → srv | `host:create` / `host:resume` | `{code, hostToken}` para retomar |
-| host → srv | `host:start` | inicia la partida |
-| jugador → srv | `player:join` | `{code, name}` |
-| jugador → srv | `player:resume` | `{code, token}` |
-| srv → host | `host:created` | `{code, hostToken, joinUrl, qr}` |
-| srv → jugador | `player:joined` | `{code, playerId, token, name}` |
-| srv → todos | `state` | estado PÚBLICO: fase, `phaseEndsAt`, `now`, jugadores (sin roles) |
-| srv → jugador | `you:role` | PRIVADO: `{role, allies?}` |
-| srv → cualquiera | `error` | `{code, message}` |
+Balance: `npm run simular` (o `node test/simulate.js --comparar`) simula miles de partidas por modo y cantidad de jugadores.
 
-## Fases (esqueleto)
-`LOBBY → ROLE_REVEAL (15 s) → DEBATE (120 s) → VOTE`
+Pruebas: con el servidor corriendo (`PORT=3000 node server.js &`), ejecutar `PORT=3000 npm test`.
 
-Pendiente: votación, noche con acciones por rol (con acción señuelo para todos), eliminaciones y condiciones de victoria. La tabla de roles está en `ROLE_TABLE` de `server.js`.
+Despliegue en Render: Web Service con build `npm install` y start `npm start`. La carpeta `content/` debe estar en el repositorio.
