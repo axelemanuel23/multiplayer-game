@@ -90,6 +90,21 @@ button.selected { background: var(--signal); border-color: var(--signal); color:
 
 .story { font-size: clamp(1.2rem, 2.8vh, 1.9rem); line-height: 1.6; max-width: 70ch; }
 
+.modes { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.mode { min-height: 0; padding: 16px 18px; display: flex; flex-direction: column; gap: 6px; align-items: flex-start; text-align: left; font-weight: 400; }
+.mode[aria-checked="true"] { border-color: var(--signal); box-shadow: inset 0 0 0 2px var(--signal); }
+.mode-name { font-weight: 800; font-size: 1.3rem; }
+.mode-desc { color: var(--mute); }
+.mode-prev { font-size: 1rem; min-height: 1.5em; }
+
+.check { display: flex; align-items: center; gap: 12px; margin: 0; font-size: 1.2rem; color: var(--ice); cursor: pointer; }
+.check input { width: 28px; height: 28px; min-height: 0; padding: 0; accent-color: var(--signal); }
+
+.guide { display: flex; flex-direction: column; gap: 18px; max-width: 70ch; }
+.guide-title { font-size: clamp(1.8rem, 5.5vh, 3.2rem); font-weight: 800; line-height: 1.15; }
+.guide-lines { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; font-size: clamp(1.2rem, 3.2vh, 2rem); line-height: 1.45; }
+.guide-lines li { padding-left: 18px; border-left: 4px solid var(--signal); }
+
 .pausebar { margin: 0; padding: 10px 16px; border-radius: 10px; background: var(--signal); color: #1b1405; font-weight: 800; text-align: center; }
 .host .pausebar { font-size: 1.6rem; }
 
