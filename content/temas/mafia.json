@@ -1,0 +1,175 @@
+{
+  "id": "mafia",
+  "titulo": "La familia",
+  "descripcion": "Un pueblo con sicarios de la familia infiltrados entre los vecinos.",
+  "_leeme": "Tema 'mafia'. Mismos ids internos de rol que 'infectados' (gnosia, engineer, guardian, doctor, crew, crew_a_bordo): cambian los nombres y los textos, nunca las reglas. Textos semilla: hay que ampliarlos (ver cantidades sugeridas en CAMBIOS.md).",
+  "ui": {
+    "lugar_etiqueta": "En el pueblo",
+    "victoria": { "humans": "Gana el pueblo.", "gnosia": "Gana la familia." },
+    "eliminado_fallback": "{nombre} fue arrestado.",
+    "sin_eliminado_fallback": "Empate o sin votos: nadie fue arrestado.",
+    "amanecer_victima_fallback": "{nombre} no volvió a casa.",
+    "amanecer_sin_victima_fallback": "Amaneció y todos siguen en pie.",
+    "estado_eliminado": " (fuera)",
+    "pregunta_voto": "¿A quién quieres arrestar?",
+    "pregunta_noche": {
+      "gnosia": "¿A quién le cumples el contrato esta noche?",
+      "engineer": "¿A quién investigas?",
+      "guardian": "¿A quién cuidas?",
+      "doctor": "¿A qué caído le haces la autopsia?",
+      "crew": "¿A quién visitas esta noche?"
+    },
+    "pista_rol": {
+      "gnosia": "Cumple el contrato de noche sin que te descubran.",
+      "engineer": "Cada noche podrás investigar a un jugador.",
+      "guardian": "Cada noche puedes custodiar a un jugador.",
+      "doctor": "Cada noche puedes examinar a un caído.",
+      "crew": "Debate y vota para encontrar a los sicarios."
+    },
+    "informe": {
+      "investigate_malo": "{nombre} trabaja para la familia.",
+      "investigate_bueno": "{nombre} es gente limpia.",
+      "examine_malo": "{nombre} era de la familia.",
+      "examine_bueno": "{nombre} era gente limpia.",
+      "protect": "cuidaste a {nombre}.",
+      "attack": "fuiste por {nombre}.",
+      "reveal_sent": "le dijiste a {nombre} que eres {rol}.",
+      "revealed": "{nombre} te confió que es {rol}."
+    },
+    "proteger_confirmacion": "Cuidaste a {nombre} toda la noche.",
+    "ronda_con_nombre": "Pasaste cerca de la casa de {nombre}. Nada fuera de lugar.",
+    "ronda_sin_nombre": "Hiciste tu ronda. Nada fuera de lugar.",
+    "sin_fallecidos": "Todavía no hay caídos para examinar.",
+    "observador": "Quedaste fuera. Sigue la partida como espectador.",
+    "soy": "Soy {rol}",
+    "fases": {
+      "ROLE_REVEAL": "Revisen su papel en el celular",
+      "VOTE": "Hora de arrestar a alguien",
+      "VOTE_RESULT": "Resultado del arresto",
+      "NIGHT": "Cae la noche sobre el pueblo",
+      "DAWN": "Amanece en el pueblo"
+    },
+    "colores": { "malo": "#ff8a3d" }
+  },
+  "marcadores": {
+    "{lugar}": "nombre del pueblo o barrio (sorteado de 'lugares')",
+    "{n_tripulantes}": "cantidad total de jugadores",
+    "{n_infectados}": "cantidad de sicarios de la partida",
+    "{impulso}": "el encargo que cumplen los sicarios (sorteado de 'impulsos')",
+    "{motivo}": "por qué ese jugador es gente limpia (sorteado de 'motivos_salvacion')",
+    "{limite}": "por qué el Guardaespaldas solo cuida a uno por noche (sorteado de 'limites_sellado')",
+    "{aliados}": "nombres de los otros sicarios (solo en 'variantes_con_aliados')",
+    "{nombre}": "nombre del jugador afectado (solo en 'eventos')"
+  },
+  "lugares": [
+    "Puerto Calamar",
+    "San Telmo del Sur",
+    "Villa Escondida",
+    "Bahía Ámbar",
+    "Cerro Negro"
+  ],
+  "impulsos": [
+    "cobrar la deuda de la familia",
+    "silenciar a los testigos",
+    "cumplir la orden del Don"
+  ],
+  "limites_sellado": [
+    "Solo puedes estar en una puerta a la vez, y no hay segundo turno de guardia.",
+    "Tu licencia de custodia cubre a una única persona por noche.",
+    "El único auto blindado que conseguiste lleva a un solo pasajero.",
+    "El pueblo solo paga una guardia, y la noche tiene una sola."
+  ],
+  "motivos_salvacion": [
+    "Tu familia vive en el barrio desde hace tres generaciones y todos pueden dar fe de ti.",
+    "La noche del primer ajuste de cuentas estabas internado, con testigos y todo.",
+    "Declaraste contra la familia hace años y desde entonces te vigilan: eso te deja fuera de sus planes.",
+    "Trabajabas de noche en el puerto, con cien ojos encima.",
+    "El párroco bautizó a tus hijos y jura que nunca te acercaste a ellos.",
+    "Pasaste la semana del ajuste de cuentas en el hospital, acompañando a un familiar."
+  ],
+  "general": [
+    "{lugar} nunca fue un pueblo tranquilo, pero esta semana dejó de fingir. El Don mandó a {n_infectados} sicarios a mezclarse entre los {n_tripulantes} habitantes, y la lista con sus nombres se quemó en el incendio de la oficina de correos. Nadie sabe quiénes son. Los sicarios no pueden echarse atrás: tienen un contrato para {impulso}, y lo cumplen cuando se apagan las luces.",
+    "El comisario viajó a la capital y no volvió. En {lugar} quedan {n_tripulantes} personas y una certeza: {n_infectados} de ellas trabajan para la familia. Un informante entregó los nombres y apareció flotando en el río antes de poder repetirlos. Los sicarios tienen órdenes de {impulso}, y de día sonríen igual que los demás.",
+    "En {lugar} todos se conocen, y por eso nadie vio venir la traición. La familia infiltró a {n_infectados} de los {n_tripulantes} vecinos con un solo encargo: {impulso}. El libro donde el notario anotaba los nombres desapareció una madrugada. Sin él, solo queda la palabra de cada uno."
+  ],
+  "roles": {
+    "crew": {
+      "nombre": "Ciudadano",
+      "variantes": [
+        "Eres vecino de {lugar} y la familia no te compró. {motivo} Aun así, {n_infectados} de las {n_tripulantes} personas del pueblo trabajan para el Don, y nadie sabe cuáles. Hay que encontrarlos antes de que no quede nadie.",
+        "Cierras la puerta con llave desde hace una semana. {motivo} Sabes que hay {n_infectados} sicarios entre ustedes y que cada noche alguien puede no volver a casa. Observa, escucha y vota con cuidado."
+      ]
+    },
+    "crew_a_bordo": {
+      "nombre": "Vecino de siempre",
+      "alternativas": ["Notario del pueblo", "Cantinero"],
+      "variantes": [
+        "Naciste en {lugar} y nunca te fuiste. Todos saben de qué lado estás, y la familia nunca te tentó. Pero {n_infectados} de las {n_tripulantes} personas del pueblo sí aceptaron su dinero. Tu ventaja es conocer cada esquina.",
+        "Atiendes a todos desde hace veinte años y nadie te cree capaz de traicionarlos. Estás limpio, y eso lo sabe el pueblo entero. Entre ustedes hay {n_infectados} sicarios; fíjate quién evita mirarte a los ojos."
+      ]
+    },
+    "doctor": {
+      "nombre": "Médico forense",
+      "alternativas": ["Médico legista"],
+      "variantes": [
+        "Eres el médico forense de {lugar}. No puedes salvar a nadie, pero sí leer lo que dejaron los muertos. Cada noche puedes examinar a uno de los caídos y saber si trabajaba para la familia. {motivo}",
+        "Los vivos mienten, los muertos no. Cada noche, en la morgue, eliges a un caído y descubres si pertenecía a la familia. Tú decides a quién se lo cuentas."
+      ]
+    },
+    "engineer": {
+      "nombre": "Policía",
+      "alternativas": ["Detective"],
+      "variantes": [
+        "Eres el único policía que no está en la nómina de la familia. Cada noche puedes investigar a un vecino: huellas, coartadas, deudas. Al amanecer sabes si trabaja para el Don. Si lo cuentas, te conviertes en un blanco.",
+        "Tu placa vale poco en {lugar}, pero tu libreta de notas sigue funcionando. Cada noche puedes seguir a un sospechoso y salir de dudas sobre su lealtad. {motivo}"
+      ]
+    },
+    "guardian": {
+      "nombre": "Guardaespaldas",
+      "alternativas": ["Custodio"],
+      "variantes": [
+        "Eres el guardaespaldas del pueblo. Cada noche puedes custodiar a una persona: si la familia va por ella, no podrá tocarla. {limite} Nunca sabrás si tu guardia evitó algo.",
+        "Los sicarios actúan de noche y tú eliges a quién cubrir. Una puerta, una persona, una noche. {limite}"
+      ]
+    },
+    "gnosia": {
+      "nombre": "Sicario",
+      "alternativas": ["Pistolero", "Hombre de la familia"],
+      "variantes": [
+        "Aceptaste el trabajo hace semanas: {impulso}. Cuando se perdió la lista, tu nombre quedó oculto entre los {n_tripulantes} vecinos. Eres uno de {n_infectados}. De día, sonríe; de noche, cumple.",
+        "El Don no admite fracasos, y tú tampoco. Nadie sabe lo que eres, y el contrato te exige {impulso}. Defiéndete en el debate: si sospechan de ti, el trabajo se complica."
+      ],
+      "variantes_con_aliados": [
+        "No estás solo: {aliados} también trabajan para el Don. Son {n_infectados} contra todo {lugar}. Coordinen su versión en el debate y no se delaten.",
+        "La familia los puso a todos en el mismo barrio: {aliados} y tú. Tienen un contrato en común, {impulso}, y una regla: si uno cae, el resto corre peligro."
+      ]
+    }
+  },
+  "eventos": {
+    "eliminado_votacion": [
+      "{nombre} fue arrestado por decisión del pueblo y quedó en el calabozo.",
+      "El pueblo entregó a {nombre} a la policía.",
+      "{nombre} fue encerrado hasta que se aclare todo."
+    ],
+    "sin_eliminado": [
+      "Empate o sin votos: nadie fue arrestado."
+    ],
+    "amanecer_victima": [
+      "{nombre} no volvió a casa anoche.",
+      "Encontraron a {nombre} sin vida en la puerta de su casa.",
+      "La casa de {nombre} amaneció en silencio. Ya no está entre ustedes."
+    ],
+    "amanecer_sin_victima": [
+      "Amaneció y todos siguen en pie.",
+      "La noche pasó en silencio: nadie falta en {lugar}."
+    ],
+    "victoria_sanos": [
+      "La familia quedó sin hombres. {lugar} puede respirar… por ahora.",
+      "Sin sicarios en el pueblo, {lugar} vuelve a ser de sus vecinos."
+    ],
+    "victoria_infectados": [
+      "Los sicarios ya son tantos como los vecinos. {lugar} le pertenece al Don.",
+      "Ya no queda quién los frene: {lugar} cayó en manos de la familia."
+    ]
+  }
+}
