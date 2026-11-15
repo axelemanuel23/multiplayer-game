@@ -40,7 +40,6 @@
       <div id="result" class="result"></div>
       <button id="rolecard" class="rolecard" aria-live="polite"></button>
       <p id="comp" class="mute"></p>
-      <p id="vigias" class="vigias"></p>
       <ul id="roster-game" class="roster"></ul>
     </section>
 
@@ -113,10 +112,10 @@
       } else {
         show('game');
         $('#pausebar').hidden = !state.paused;
-        $('#phase').textContent = Gnosia.PHASE_LABEL[state.phase] || state.phase;
+        $('#phase').textContent = Gnosia.phaseLabel(state.phase);
         Gnosia.renderRoster($('#roster-game'), state.players, session.playerId);
-        $('#comp').textContent = Gnosia.compText(state);
-        $('#vigias').textContent = Gnosia.vigiaText(state);
+        $('#comp').textContent = state.composition
+          ? Gnosia.ui().lugar_etiqueta + ': ' + Object.entries(state.composition).filter(([, n]) => n > 0).map(([r, n]) => Gnosia.ROLE[r].name + ' ×' + n).join(' · ') : '';
         renderRole(false);
         Gnosia.renderResult($('#result'), state.result);
         renderAction();
@@ -141,7 +140,7 @@
       const me = state && session && state.players.find((p) => p.id === session.playerId);
       if (!me) return;
       if (state.paused) return add('p', 'mute', 'Esperen a que el anfitrión reanude la partida.');
-      if (!me.alive && state.phase !== 'GAME_OVER' && state.phase !== 'LOBBY') return add('p', 'mute', 'Fuiste eliminado. Sigue la partida como observador.');
+      if (!me.alive && state.phase !== 'GAME_OVER' && state.phase !== 'LOBBY') return add('p', 'mute', Gnosia.ui().observador);
       if (state.phase === 'VOTE') renderVote(box, add, me);
       else if (state.phase === 'NIGHT' && night) renderNight(box, add, me);
       if (notice) add('p', 'error', notice);
@@ -156,7 +155,7 @@
     }
 
     function renderVote(box, add, me) {
-      add('h2', '', '¿A quién pones en cuarentena?');
+      add('h2', '', Gnosia.ui().pregunta_voto);
       const list = document.createElement('div'); list.className = 'choices';
       for (const p of state.players.filter((x) => x.alive && x.id !== me.id)) {
         list.append(choice(p.name, myVote === p.id, () => api.send({ t: 'player:vote', target: p.id })));
@@ -166,11 +165,6 @@
       add('p', 'mute', 'Puedes cambiar tu voto hasta que termine el tiempo.');
       if (intents && intents.kind === 'vote') allyLines(add, me);
     }
-
-    const QUESTION = {
-      gnosia: '¿A quién atacas esta noche?', engineer: '¿A quién analizas?', guardian: '¿A quién proteges?',
-      doctor: '¿A qué eliminado examinas?', crew: '¿Cerca de quién haces ronda?',
-    };
 
     function renderNight(box, add, me) {
       const go = (v) => () => { view = v; socialTarget = null; notice = ''; renderAction(); };
@@ -187,17 +181,17 @@
       }
 
       if (view === 'role') {
-        add('h2', '', QUESTION[night.role]);
+        add('h2', '', Gnosia.ui().pregunta_noche[night.role]);
         if (night.role !== 'gnosia' && nightDone) {
           const rep = reports.filter((x) => x.night === night.night && ['investigate', 'examine', 'protect'].includes(x.kind)).pop();
-          if (rep && rep.kind === 'protect') add('p', 'verdict', 'Sellaste la cabina de ' + rep.name + '.');
+          if (rep && rep.kind === 'protect') add('p', 'verdict', Gnosia.tpl(Gnosia.ui().proteger_confirmacion, { nombre: rep.name }));
           else if (rep) add('p', 'verdict', Gnosia.describeReport(rep).replace(/^Noche \d+: /, ''));
-          else add('p', '', lastName ? 'Hiciste una ronda cerca de ' + lastName + '. No notaste nada extraño.' : 'Hiciste tu ronda. No notaste nada extraño.');
+          else add('p', '', lastName ? Gnosia.tpl(Gnosia.ui().ronda_con_nombre, { nombre: lastName }) : Gnosia.ui().ronda_sin_nombre);
           box.append(back());
           return;
         }
         if (!night.targets.length) {
-          add('p', 'mute', night.role === 'doctor' ? 'Todavía no hay fallecidos para examinar.' : 'No hay nadie a quien elegir.');
+          add('p', 'mute', night.role === 'doctor' ? Gnosia.ui().sin_fallecidos : 'No hay nadie a quien elegir.');
           box.append(back());
           return;
         }
@@ -225,7 +219,7 @@
       } else {
         add('p', '', 'Para ' + socialTarget.name + ':');
         for (const c of night.claims) {
-          list.append(choice('Soy ' + Gnosia.ROLE[c].name, false, () => api.send({ t: 'player:reveal', target: socialTarget.id, claim: c })));
+          list.append(choice(Gnosia.tpl(Gnosia.ui().soy, { rol: Gnosia.ROLE[c].name }), false, () => api.send({ t: 'player:reveal', target: socialTarget.id, claim: c })));
         }
       }
       box.append(list);
@@ -241,7 +235,7 @@
       const line = (cls, text) => { const p = document.createElement('p'); if (cls) p.className = cls; p.textContent = text; card.append(p); };
       if (!roleMsg) return line('mute', 'Esperando tu rol…');
       if (!shown) return line('mute', 'Mantén presionado para ver tu rol' + (reports.length ? ' e informes (' + reports.length + ')' : ''));
-      const r = roleMsg.verified ? Gnosia.ROLE.vigia : Gnosia.ROLE[roleMsg.role];
+      const r = Gnosia.ROLE[roleMsg.role];
       line('role-name', r.name);
       line('', roleMsg.story || r.hint);
       if (roleMsg.allies && roleMsg.allies.length) line('mute', 'Tus aliados: ' + roleMsg.allies.join(', '));
