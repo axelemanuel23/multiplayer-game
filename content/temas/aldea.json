@@ -1,0 +1,192 @@
+{
+  "id": "aldea",
+  "titulo": "Luna de lobos",
+  "descripcion": "Una aldea aislada donde algunos vecinos son lobos al caer la noche.",
+  "_leeme": "Tema 'aldea'. Mismos ids internos de rol que los demás temas: cambian los nombres y los textos, nunca las reglas. Textos semilla: se pueden ampliar.",
+  "ui": {
+    "lugar_etiqueta": "En la aldea",
+    "victoria": {
+      "humans": "Gana la aldea.",
+      "gnosia": "Ganan los lobos."
+    },
+    "eliminado_fallback": "{nombre} fue encerrado en la bodega del molino.",
+    "sin_eliminado_fallback": "Empate o sin votos: nadie fue encerrado.",
+    "amanecer_victima_fallback": "{nombre} no despertó.",
+    "amanecer_sin_victima_fallback": "Amaneció y la aldea sigue completa.",
+    "estado_eliminado": " (fuera)",
+    "pregunta_voto": "¿A quién encierras en la bodega?",
+    "pregunta_noche": {
+      "gnosia": "¿A quién devoras esta noche?",
+      "engineer": "¿A quién observas?",
+      "guardian": "¿A quién proteges?",
+      "doctor": "¿A qué caído examinas?",
+      "crew": "¿A quién vigilas desde tu ventana?"
+    },
+    "pista_rol": {
+      "gnosia": "Caza de noche sin que te descubran.",
+      "engineer": "Cada noche podrás ver la verdadera naturaleza de un vecino.",
+      "guardian": "Cada noche puedes proteger la casa de un vecino.",
+      "doctor": "Cada noche puedes examinar a un caído.",
+      "crew": "Debate y vota para encontrar a los lobos."
+    },
+    "informe": {
+      "investigate_malo": "{nombre} es un lobo.",
+      "investigate_bueno": "{nombre} es gente de la aldea.",
+      "examine_malo": "{nombre} era un lobo.",
+      "examine_bueno": "{nombre} era gente de la aldea.",
+      "protect": "protegiste la casa de {nombre}.",
+      "attack": "cazaste a {nombre}.",
+      "reveal_sent": "le dijiste a {nombre} que eres {rol}.",
+      "revealed": "{nombre} te reveló que es {rol}."
+    },
+    "proteger_confirmacion": "Protegiste la casa de {nombre} toda la noche.",
+    "ronda_con_nombre": "Pasaste frente a la casa de {nombre}. No viste nada extraño.",
+    "ronda_sin_nombre": "Hiciste tu ronda. No viste nada extraño.",
+    "sin_fallecidos": "Todavía no hay caídos para examinar.",
+    "observador": "Quedaste fuera. Sigue la partida como espectador.",
+    "soy": "Soy {rol}",
+    "fases": {
+      "NIGHT": "Cae la noche sobre la aldea",
+      "DAWN": "Amanece en la aldea",
+      "VOTE": "Hora de decidir",
+      "VOTE_RESULT": "Resultado de la votación"
+    },
+    "colores": {
+      "malo": "#c97b3a"
+    }
+  },
+  "marcadores": {
+    "{lugar}": "nombre del lugar donde ocurre la partida (sorteado de 'lugares')",
+    "{n_tripulantes}": "cantidad total de jugadores",
+    "{n_infectados}": "cantidad de integrantes del bando oculto",
+    "{impulso}": "lo que impulsa al bando oculto, en infinitivo (sorteado de 'impulsos')",
+    "{motivo}": "por qué ese jugador se salvó (sorteado de 'motivos_salvacion')",
+    "{limite}": "por qué el protector solo cubre a uno por noche (sorteado de 'limites_sellado')",
+    "{aliados}": "nombres de los otros integrantes del bando oculto (solo en 'variantes_con_aliados')",
+    "{nombre}": "nombre del jugador afectado (solo en 'eventos')"
+  },
+  "lugares": [
+    "Valle Hondo",
+    "Piedra Alta",
+    "Los Fresnos",
+    "Robledal",
+    "San Eulogio"
+  ],
+  "impulsos": [
+    "devorar a alguien",
+    "saciar la maldición",
+    "cumplir el pacto de la luna"
+  ],
+  "limites_sellado": [
+    "Solo te queda hierba bendita para una casa por noche.",
+    "Tu amuleto protege un único umbral, y se agota hasta el amanecer.",
+    "El círculo de sal solo alcanza para una puerta."
+  ],
+  "motivos_salvacion": [
+    "Naciste bajo un signo que repele la maldición, según la partera.",
+    "Tu abuela te colgó un amuleto de plata el día que naciste.",
+    "La noche del primer ataque dormías en la casa del párroco, con testigos.",
+    "Tu familia fundó la aldea y la maldición nunca los tocó.",
+    "Pasaste el último mes en el monte con los pastores, lejos de la aldea."
+  ],
+  "general": [
+    "Con el único camino cortado por la nieve, {lugar} quedó sin salida. Esa misma semana aparecieron los primeros rastros: {n_infectados} de los {n_tripulantes} habitantes cargan la maldición de la luna y, al caer la noche, necesitan {impulso}. El viejo registro de bautismos se quemó y nadie sabe quiénes son.",
+    "En {lugar} siempre se habló de lobos, pero nadie lo creyó hasta que un pastor no volvió del monte. La maldición recayó en {n_infectados} de las {n_tripulantes} personas de la aldea, y por la noche no pueden evitar {impulso}. De día son los mismos vecinos de siempre.",
+    "El puente de {lugar} cayó con la crecida y la aldea se quedó sola con su secreto. Entre sus {n_tripulantes} habitantes hay {n_infectados} lobos, y cuando sale la luna les exige {impulso}. Nadie los vio transformarse; solo quedan las huellas por la mañana."
+  ],
+  "roles": {
+    "crew": {
+      "nombre": "Aldeano",
+      "alternativas": [
+        "Vecino"
+      ],
+      "variantes": [
+        "Eres vecino de {lugar} y la luna no te tocó. {motivo} Aun así, {n_infectados} de las {n_tripulantes} personas de la aldea son lobos, y nadie sabe cuáles. Encuéntralos antes de que no quede quién los detenga.",
+        "Cierras la puerta con tranca desde que cae el sol. {motivo} Sabes que hay {n_infectados} lobos entre ustedes y que cada noche alguien puede no despertar. Escucha, pregunta y vota con cuidado."
+      ]
+    },
+    "crew_a_bordo": {
+      "nombre": "Vecino de toda la vida",
+      "alternativas": [
+        "Campanero",
+        "Pastor del valle"
+      ],
+      "variantes": [
+        "Naciste en {lugar} y nunca saliste del valle. Todos te conocen y todos saben que duermes tranquilo. Pero {n_infectados} de las {n_tripulantes} personas de la aldea llevan la maldición. Tu ventaja es conocer cada rincón.",
+        "Tocas la campana de {lugar} desde hace veinte años, y nadie duda de tu lealtad. Entre ustedes hay {n_infectados} lobos; fíjate quién evita tu mirada al amanecer."
+      ]
+    },
+    "doctor": {
+      "nombre": "Enterrador",
+      "alternativas": [
+        "Sepulturero"
+      ],
+      "variantes": [
+        "Eres el enterrador de {lugar}. Los lobos dejan huellas que solo tú sabes leer: cada noche puedes examinar a un caído y saber si era uno de ellos. {motivo}",
+        "Los vivos mienten, pero los muertos no. Cada noche eliges a un caído, lees las marcas de su cuerpo y descubres si era un lobo. Tú decides a quién se lo cuentas."
+      ]
+    },
+    "engineer": {
+      "nombre": "Vidente",
+      "alternativas": [
+        "Adivino"
+      ],
+      "variantes": [
+        "Las cartas y el agua de la fuente te muestran lo que otros no ven. Cada noche puedes mirar a un vecino y saber si es un lobo. Si lo cuentas, te conviertes en el próximo objetivo.",
+        "Tienes el don desde niño y lo escondiste por miedo. Cada noche puedes observar a alguien y descubrir su verdadera naturaleza. {motivo}"
+      ]
+    },
+    "guardian": {
+      "nombre": "Curandero",
+      "alternativas": [
+        "Guardián del umbral"
+      ],
+      "variantes": [
+        "Conoces las hierbas que espantan a la bestia. Cada noche puedes proteger la casa de un vecino: si los lobos van por esa persona, no podrán tocarla. {limite} No sabrás si tu protección sirvió de algo.",
+        "Los lobos cazan de noche y tú decides qué puerta queda bendita. Una casa, una noche. {limite}"
+      ]
+    },
+    "gnosia": {
+      "nombre": "Lobo",
+      "alternativas": [
+        "Hombre lobo",
+        "Maldito"
+      ],
+      "variantes": [
+        "La maldición despertó en ti hace semanas. De día eres el mismo vecino de siempre; de noche necesitas {impulso}. Eres uno de {n_infectados} y nadie en {lugar} sabe lo que eres. Defiéndete en el debate.",
+        "Cuando se quemó el registro, respiraste aliviado: tu nombre quedó oculto entre los {n_tripulantes} vecinos. La luna te exige {impulso}. No dejes que sospechen de ti."
+      ],
+      "variantes_con_aliados": [
+        "No estás solo: {aliados} también llevan la maldición. Son {n_infectados} contra todo {lugar}. Coordinen su versión en el debate y no se delaten.",
+        "Se reconocieron la primera noche, entre aullidos: {aliados} y tú. Comparten la urgencia de {impulso}. De día, vecinos; de noche, manada."
+      ]
+    }
+  },
+  "eventos": {
+    "eliminado_votacion": [
+      "{nombre} fue encerrado en la bodega por decisión de la aldea.",
+      "La aldea decidió encerrar a {nombre} hasta que pase la luna.",
+      "{nombre} fue apartado de la aldea hasta nuevo aviso."
+    ],
+    "sin_eliminado": [
+      "Empate o sin votos: nadie fue encerrado."
+    ],
+    "amanecer_victima": [
+      "{nombre} no despertó esta mañana.",
+      "Encontraron huellas y sangre frente a la casa de {nombre}.",
+      "La casa de {nombre} amaneció con la puerta abierta. Ya no está entre ustedes."
+    ],
+    "amanecer_sin_victima": [
+      "Amaneció y la aldea sigue completa.",
+      "La noche pasó sin aullidos: nadie falta en {lugar}."
+    ],
+    "victoria_sanos": [
+      "Los lobos fueron descubiertos. {lugar} puede dormir en paz… por ahora.",
+      "Sin lobos en la aldea, {lugar} vuelve a ser de sus vecinos."
+    ],
+    "victoria_infectados": [
+      "Los lobos ya son tantos como los vecinos. {lugar} les pertenece.",
+      "Ya no queda quién los frene: {lugar} cayó bajo la maldición."
+    ]
+  }
+}
