@@ -1,0 +1,193 @@
+{
+  "id": "salon",
+  "titulo": "Cena de misterio",
+  "descripcion": "Una tormenta aísla a los invitados con asesinos entre ellos.",
+  "_leeme": "Tema 'salon'. Mismos ids internos de rol que los demás temas: cambian los nombres y los textos, nunca las reglas. Textos semilla: se pueden ampliar.",
+  "ui": {
+    "lugar_etiqueta": "En el lugar",
+    "victoria": {
+      "humans": "Ganan los invitados.",
+      "gnosia": "Ganan los asesinos."
+    },
+    "eliminado_fallback": "{nombre} fue encerrado en su habitación por decisión de los invitados.",
+    "sin_eliminado_fallback": "Empate o sin votos: nadie fue encerrado.",
+    "amanecer_victima_fallback": "{nombre} no despertó.",
+    "amanecer_sin_victima_fallback": "Amaneció y todos los invitados siguen con vida.",
+    "estado_eliminado": " (fuera)",
+    "pregunta_voto": "¿A quién señalas como asesino?",
+    "pregunta_noche": {
+      "gnosia": "¿A quién eliminas esta noche?",
+      "engineer": "¿A quién investigas?",
+      "guardian": "¿A quién custodias?",
+      "doctor": "¿A qué víctima examinas?",
+      "crew": "¿A quién vigilas desde el pasillo?"
+    },
+    "pista_rol": {
+      "gnosia": "Actúa de noche sin que te descubran.",
+      "engineer": "Cada noche podrás investigar a un invitado.",
+      "guardian": "Cada noche puedes custodiar la puerta de un invitado.",
+      "doctor": "Cada noche puedes examinar a una víctima.",
+      "crew": "Debate y vota para encontrar a los asesinos."
+    },
+    "informe": {
+      "investigate_malo": "{nombre} es un asesino.",
+      "investigate_bueno": "{nombre} es inocente.",
+      "examine_malo": "{nombre} era un asesino.",
+      "examine_bueno": "{nombre} era inocente.",
+      "protect": "custodiaste la puerta de {nombre}.",
+      "attack": "fuiste por {nombre}.",
+      "reveal_sent": "le dijiste a {nombre} que eres {rol}.",
+      "revealed": "{nombre} te reveló que es {rol}."
+    },
+    "proteger_confirmacion": "Custodiaste la puerta de {nombre} toda la noche.",
+    "ronda_con_nombre": "Pasaste frente a la puerta de {nombre}. Nada raro.",
+    "ronda_sin_nombre": "Recorriste el pasillo. Nada raro.",
+    "sin_fallecidos": "Todavía no hay víctimas para examinar.",
+    "observador": "Quedaste fuera. Sigue la partida como espectador.",
+    "soy": "Soy {rol}",
+    "fases": {
+      "NIGHT": "Cae la noche sobre la reunión",
+      "DAWN": "Amanece",
+      "VOTE": "Hora de acusar",
+      "VOTE_RESULT": "Resultado de la acusación"
+    },
+    "colores": {
+      "malo": "#d4a017"
+    }
+  },
+  "marcadores": {
+    "{lugar}": "nombre del lugar donde ocurre la partida (sorteado de 'lugares')",
+    "{n_tripulantes}": "cantidad total de jugadores",
+    "{n_infectados}": "cantidad de integrantes del bando oculto",
+    "{impulso}": "lo que impulsa al bando oculto, en infinitivo (sorteado de 'impulsos')",
+    "{motivo}": "por qué ese jugador se salvó (sorteado de 'motivos_salvacion')",
+    "{limite}": "por qué el protector solo cubre a uno por noche (sorteado de 'limites_sellado')",
+    "{aliados}": "nombres de los otros integrantes del bando oculto (solo en 'variantes_con_aliados')",
+    "{nombre}": "nombre del jugador afectado (solo en 'eventos')"
+  },
+  "lugares": [
+    "Mansión Ravenscroft",
+    "Gran Hotel Belvedere",
+    "Crucero Estrella del Sur",
+    "Villa Montecarlo",
+    "Hotel Termal Alpino"
+  ],
+  "impulsos": [
+    "silenciar a los testigos",
+    "heredar la fortuna",
+    "cobrar una venganza"
+  ],
+  "limites_sellado": [
+    "El mayordomo solo tiene una llave maestra, y no vuelve a tus manos hasta el amanecer.",
+    "Solo puedes montar guardia frente a una puerta, y no hay relevo hasta el día.",
+    "El personal de seguridad es mínimo: apenas alcanza para una puerta por noche."
+  ],
+  "motivos_salvacion": [
+    "Estuviste con otros invitados toda la noche del primer crimen, y todos lo recuerdan.",
+    "Tu coartada figura en el libro de recepción, con hora y firma.",
+    "Llegaste después del primer crimen, y el chofer pudo confirmarlo.",
+    "El cocinero te vio toda la noche en la cocina, ayudando con la cena.",
+    "Tu habitación tenía el cerrojo roto y por eso dormiste en el salón, con testigos."
+  ],
+  "general": [
+    "La tormenta dejó a los {n_tripulantes} invitados sin salida de {lugar}, y esa noche apareció el primer cuerpo. Entre ustedes hay {n_infectados} asesinos que actúan para {impulso}. El libro de invitados se mojó y no se lee quién llegó con quién.",
+    "Nadie puede salir de {lugar}: el puente quedó cortado. Entre los {n_tripulantes} invitados hay {n_infectados} asesinos que buscan {impulso}. La lista de huéspedes se perdió y la policía no llegará hasta que pase la tormenta.",
+    "Todo comenzó con un grito en el salón de {lugar}. Hoy se sabe que {n_infectados} de los {n_tripulantes} invitados esconden un motivo: {impulso}. Los registros de la recepción desaparecieron y nadie tiene coartada completa."
+  ],
+  "roles": {
+    "crew": {
+      "nombre": "Invitado",
+      "alternativas": [
+        "Huésped"
+      ],
+      "variantes": [
+        "Eres invitado en {lugar} y no tienes nada que ocultar. {motivo} Aun así, {n_infectados} de los {n_tripulantes} invitados son asesinos y nadie sabe cuáles. Hay que descubrirlos antes de que no quede nadie.",
+        "Cierras el cerrojo cada noche. {motivo} Sabes que hay {n_infectados} asesinos entre los invitados y que alguien puede no despertar. Observa, pregunta y vota con cuidado."
+      ]
+    },
+    "crew_a_bordo": {
+      "nombre": "Personal de servicio",
+      "alternativas": [
+        "Mayordomo",
+        "Cocinero"
+      ],
+      "variantes": [
+        "Trabajas en {lugar} desde hace años y conoces cada pasillo. Nadie sospecha de ti porque estuviste de servicio toda la noche. Entre los {n_tripulantes} presentes hay {n_infectados} asesinos; tu ventaja es conocer cada rincón.",
+        "Eres parte del personal de {lugar} y los invitados confían en ti. Hay {n_infectados} asesinos entre ellos: fíjate quién pide la llave de una habitación ajena."
+      ]
+    },
+    "doctor": {
+      "nombre": "Forense",
+      "alternativas": [
+        "Médico de la reunión"
+      ],
+      "variantes": [
+        "Eres médico y te toca examinar a las víctimas. Cada noche puedes revisar a una víctima y saber si era uno de los asesinos. {motivo}",
+        "Los invitados mienten, pero los cuerpos no. Cada noche eliges a una víctima y buscas la verdad en la evidencia. Tú decides a quién se lo cuentas."
+      ]
+    },
+    "engineer": {
+      "nombre": "Detective",
+      "alternativas": [
+        "Inspector"
+      ],
+      "variantes": [
+        "Eres detective, y por casualidad estás en {lugar}. Cada noche puedes investigar a un invitado y saber si es un asesino. Si lo cuentas, te conviertes en el próximo blanco.",
+        "Tienes una libreta, una lupa y una memoria infalible. Cada noche puedes investigar a un invitado y confirmar su inocencia. {motivo}"
+      ]
+    },
+    "guardian": {
+      "nombre": "Guardaespaldas",
+      "alternativas": [
+        "Chofer",
+        "Jefe de seguridad"
+      ],
+      "variantes": [
+        "Eres el guardaespaldas del lugar. Cada noche puedes custodiar la puerta de un invitado: nadie podrá entrar. {limite} Nunca sabrás si evitaste algo.",
+        "Los asesinos actúan de noche y tú decides qué puerta vigilar. Una puerta, una noche. {limite}"
+      ]
+    },
+    "gnosia": {
+      "nombre": "Asesino",
+      "alternativas": [
+        "Culpable",
+        "Criminal"
+      ],
+      "variantes": [
+        "Planeaste esto durante meses. Entre los {n_tripulantes} invitados, nadie sabe que buscas {impulso}. Eres uno de {n_infectados}. De día, sonríe; de noche, actúa.",
+        "Cuando el libro de invitados se arruinó, tu nombre quedó oculto entre los demás. Tu objetivo es {impulso}. No dejes que te descubran."
+      ],
+      "variantes_con_aliados": [
+        "No actúas solo: {aliados} están en el plan. Son {n_infectados} contra todos los invitados. Coordinen su versión en el debate y no se delaten.",
+        "Un gesto en la cena bastó para reconocerse: {aliados} y tú. Comparten el objetivo de {impulso}. De día, invitados; de noche, cómplices."
+      ]
+    }
+  },
+  "eventos": {
+    "eliminado_votacion": [
+      "{nombre} fue encerrado en su habitación por decisión de los invitados.",
+      "Los invitados decidieron dejar a {nombre} bajo llave.",
+      "{nombre} fue retenido hasta que llegue la policía."
+    ],
+    "sin_eliminado": [
+      "Empate o sin votos: nadie fue encerrado."
+    ],
+    "amanecer_victima": [
+      "{nombre} no despertó esta mañana.",
+      "Encontraron a {nombre} sin vida en su habitación.",
+      "La puerta de {nombre} amaneció entreabierta. Ya no está entre ustedes."
+    ],
+    "amanecer_sin_victima": [
+      "Amaneció y todos los invitados siguen con vida.",
+      "La noche pasó en calma: nadie falta en {lugar}."
+    ],
+    "victoria_sanos": [
+      "Los asesinos fueron descubiertos. {lugar} respira… por ahora.",
+      "Sin asesinos, {lugar} puede esperar a la policía."
+    ],
+    "victoria_infectados": [
+      "Los asesinos ya son tantos como los invitados. {lugar} es suyo.",
+      "Ya no queda quién los detenga: {lugar} cayó en manos de los asesinos."
+    ]
+  }
+}
