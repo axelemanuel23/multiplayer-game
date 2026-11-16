@@ -1,0 +1,192 @@
+{
+  "id": "culto",
+  "titulo": "El pacto del pueblo",
+  "descripcion": "Un pueblo con una secta oculta que exige una ofrenda cada noche.",
+  "_leeme": "Tema 'culto'. Mismos ids internos de rol que los demás temas: cambian los nombres y los textos, nunca las reglas. Textos semilla: se pueden ampliar.",
+  "ui": {
+    "lugar_etiqueta": "En el pueblo",
+    "victoria": {
+      "humans": "Gana el pueblo.",
+      "gnosia": "Gana el culto."
+    },
+    "eliminado_fallback": "{nombre} fue expulsado del pueblo.",
+    "sin_eliminado_fallback": "Empate o sin votos: nadie fue expulsado.",
+    "amanecer_victima_fallback": "{nombre} no despertó.",
+    "amanecer_sin_victima_fallback": "Amaneció y todos siguen en el pueblo.",
+    "estado_eliminado": " (fuera)",
+    "pregunta_voto": "¿A quién expulsas del pueblo?",
+    "pregunta_noche": {
+      "gnosia": "¿A quién eliges para el ritual?",
+      "engineer": "¿A quién interrogas?",
+      "guardian": "¿A quién proteges?",
+      "doctor": "¿A qué caído examinas?",
+      "crew": "¿A quién vigilas esta noche?"
+    },
+    "pista_rol": {
+      "gnosia": "Cumple el ritual de noche sin que te descubran.",
+      "engineer": "Cada noche podrás interrogar a un vecino.",
+      "guardian": "Cada noche puedes sellar la casa de un vecino.",
+      "doctor": "Cada noche puedes examinar a un caído.",
+      "crew": "Debate y vota para encontrar a los cultistas."
+    },
+    "informe": {
+      "investigate_malo": "{nombre} pertenece al culto.",
+      "investigate_bueno": "{nombre} es ajeno al culto.",
+      "examine_malo": "{nombre} pertenecía al culto.",
+      "examine_bueno": "{nombre} era ajeno al culto.",
+      "protect": "sellaste la casa de {nombre}.",
+      "attack": "elegiste a {nombre} para el ritual.",
+      "reveal_sent": "le dijiste a {nombre} que eres {rol}.",
+      "revealed": "{nombre} te reveló que es {rol}."
+    },
+    "proteger_confirmacion": "Sellaste la casa de {nombre} toda la noche.",
+    "ronda_con_nombre": "Pasaste frente a la casa de {nombre}. Nada fuera de lugar.",
+    "ronda_sin_nombre": "Hiciste tu ronda. Nada fuera de lugar.",
+    "sin_fallecidos": "Todavía no hay caídos para examinar.",
+    "observador": "Quedaste fuera. Sigue la partida como espectador.",
+    "soy": "Soy {rol}",
+    "fases": {
+      "NIGHT": "Cae la noche sobre el pueblo",
+      "DAWN": "Amanece en el pueblo",
+      "VOTE": "Hora de expulsar",
+      "VOTE_RESULT": "Resultado de la expulsión"
+    },
+    "colores": {
+      "malo": "#9b59d0"
+    }
+  },
+  "marcadores": {
+    "{lugar}": "nombre del lugar donde ocurre la partida (sorteado de 'lugares')",
+    "{n_tripulantes}": "cantidad total de jugadores",
+    "{n_infectados}": "cantidad de integrantes del bando oculto",
+    "{impulso}": "lo que impulsa al bando oculto, en infinitivo (sorteado de 'impulsos')",
+    "{motivo}": "por qué ese jugador se salvó (sorteado de 'motivos_salvacion')",
+    "{limite}": "por qué el protector solo cubre a uno por noche (sorteado de 'limites_sellado')",
+    "{aliados}": "nombres de los otros integrantes del bando oculto (solo en 'variantes_con_aliados')",
+    "{nombre}": "nombre del jugador afectado (solo en 'eventos')"
+  },
+  "lugares": [
+    "Valdemuro",
+    "San Casimiro",
+    "Altozano",
+    "Hondonada",
+    "Santa Lucía de las Cenizas"
+  ],
+  "impulsos": [
+    "completar el ritual",
+    "ofrecer una vida al altar",
+    "cumplir el pacto"
+  ],
+  "limites_sellado": [
+    "El sello de tiza solo alcanza para una puerta por noche.",
+    "Tu sal bendita se agota con una sola casa.",
+    "El conjuro de protección necesita toda la noche y solo cubre a una persona."
+  ],
+  "motivos_salvacion": [
+    "Tus padres abandonaron el pueblo antes del primer ritual y naciste fuera.",
+    "Nunca te invitaron al pacto: el culto te consideraba demasiado curioso.",
+    "Te bautizaron en la iglesia vieja, y eso dejó tu marca en el registro.",
+    "Te negaste en público a firmar el libro, y todos lo recuerdan.",
+    "Pasaste el último año fuera, trabajando en la ciudad."
+  ],
+  "general": [
+    "Algo despertó bajo {lugar}. Entre sus {n_tripulantes} habitantes, {n_infectados} pertenecen a un culto que cada noche necesita {impulso}. El libro donde se anotaban los nombres de los fieles desapareció, y ya nadie sabe quién es quién.",
+    "Los vecinos de {lugar} siempre sospecharon de las luces en la colina. Hoy saben que {n_infectados} de los {n_tripulantes} habitantes sirven a un culto antiguo, que exige {impulso} al caer el sol. El registro parroquial se perdió en un incendio.",
+    "Nadie en {lugar} reconoce haber firmado el pacto, pero {n_infectados} de los {n_tripulantes} lo hicieron. Cada noche, el culto necesita {impulso}, y cada mañana el pueblo cuenta quién falta. El libro de firmas no aparece."
+  ],
+  "roles": {
+    "crew": {
+      "nombre": "Feligrés",
+      "alternativas": [
+        "Vecino del pueblo"
+      ],
+      "variantes": [
+        "Eres vecino de {lugar} y nunca firmaste el pacto. {motivo} Aun así, {n_infectados} de las {n_tripulantes} personas del pueblo son cultistas, y nadie sabe cuáles. Hay que encontrarlos antes de que no quede nadie.",
+        "Pasas las noches con la puerta atrancada. {motivo} Sabes que hay {n_infectados} cultistas entre ustedes y que cada noche alguien puede no despertar. Observa, escucha y vota con cuidado."
+      ]
+    },
+    "crew_a_bordo": {
+      "nombre": "Vecino antiguo",
+      "alternativas": [
+        "Párroco",
+        "Campanero"
+      ],
+      "variantes": [
+        "Naciste en {lugar} y sabes todo lo que ocurrió antes del pacto. El culto nunca se atrevió a tocarte. Entre los {n_tripulantes} habitantes hay {n_infectados} cultistas; tu ventaja es conocer la historia del pueblo.",
+        "Llevas toda la vida tocando la campana de {lugar}. Nadie dudó nunca de tu fe. Hay {n_infectados} cultistas entre ustedes: fíjate quién evita la misa."
+      ]
+    },
+    "doctor": {
+      "nombre": "Cronista",
+      "alternativas": [
+        "Cronista del pueblo"
+      ],
+      "variantes": [
+        "Eres el cronista de {lugar} y conoces las marcas del ritual. Cada noche puedes examinar a un caído y saber si pertenecía al culto. {motivo}",
+        "Los vivos mienten, pero los símbolos grabados en los cuerpos no. Cada noche eliges a un caído y descubres si era fiel al culto. Tú decides a quién se lo cuentas."
+      ]
+    },
+    "engineer": {
+      "nombre": "Inquisidor",
+      "alternativas": [
+        "Investigador del culto"
+      ],
+      "variantes": [
+        "Llegaste a {lugar} siguiendo un rastro de rituales. Cada noche puedes interrogar a un vecino y saber si pertenece al culto. Si lo cuentas, te conviertes en el próximo sacrificio.",
+        "Conoces las señales y los símbolos del culto. Cada noche puedes interrogar a un vecino y confirmar su fe. {motivo}"
+      ]
+    },
+    "guardian": {
+      "nombre": "Vigilante",
+      "alternativas": [
+        "Guardián del sello"
+      ],
+      "variantes": [
+        "Eres el vigilante del pueblo. Cada noche puedes trazar un sello de protección sobre una casa: el culto no podrá tocar a quien duerma dentro. {limite} Nunca sabrás si evitaste algo.",
+        "Los cultistas actúan de noche y tú decides qué casa queda sellada. Una puerta, una noche. {limite}"
+      ]
+    },
+    "gnosia": {
+      "nombre": "Cultista",
+      "alternativas": [
+        "Fiel del pacto",
+        "Acólito"
+      ],
+      "variantes": [
+        "Firmaste el pacto hace meses. De día eres un vecino más; de noche el culto te exige {impulso}. Eres uno de {n_infectados} y nadie en {lugar} sabe lo que eres. Defiéndete en el debate.",
+        "Cuando desapareció el libro, tu nombre quedó oculto entre los {n_tripulantes} vecinos. El pacto exige {impulso}. No dejes que te descubran."
+      ],
+      "variantes_con_aliados": [
+        "No estás solo: {aliados} también firmaron. Son {n_infectados} contra todo {lugar}. Coordinen su versión en el debate y no se delaten.",
+        "Se reconocieron en la primera ceremonia: {aliados} y tú. Comparten el pacto de {impulso}. De día, vecinos; de noche, congregación."
+      ]
+    }
+  },
+  "eventos": {
+    "eliminado_votacion": [
+      "{nombre} fue expulsado del pueblo por decisión de los vecinos.",
+      "Los vecinos decidieron llevar a {nombre} más allá de los límites de {lugar}.",
+      "{nombre} fue apartado del pueblo hasta nuevo aviso."
+    ],
+    "sin_eliminado": [
+      "Empate o sin votos: nadie fue expulsado."
+    ],
+    "amanecer_victima": [
+      "{nombre} no despertó esta mañana.",
+      "Encontraron a {nombre} en el altar de la colina.",
+      "La casa de {nombre} amaneció marcada con un símbolo. Ya no está entre ustedes."
+    ],
+    "amanecer_sin_victima": [
+      "Amaneció y todos siguen en el pueblo.",
+      "La noche pasó en silencio: nadie falta en {lugar}."
+    ],
+    "victoria_sanos": [
+      "El culto fue descubierto. {lugar} se libera del pacto… por ahora.",
+      "Sin cultistas, {lugar} puede volver a la normalidad."
+    ],
+    "victoria_infectados": [
+      "Los cultistas ya son tantos como los vecinos. {lugar} les pertenece.",
+      "Ya no queda quién los frene: {lugar} cayó en manos del culto."
+    ]
+  }
+}
