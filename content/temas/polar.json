@@ -1,0 +1,191 @@
+{
+  "id": "polar",
+  "titulo": "Réplicas bajo el hielo",
+  "descripcion": "Una base aislada donde algo ocupa el lugar de algunas personas.",
+  "_leeme": "Tema 'polar'. Mismos ids internos de rol que los demás temas: cambian los nombres y los textos, nunca las reglas. Textos semilla: se pueden ampliar.",
+  "ui": {
+    "lugar_etiqueta": "En la base",
+    "victoria": {
+      "humans": "Ganan los humanos.",
+      "gnosia": "Ganan las réplicas."
+    },
+    "eliminado_fallback": "{nombre} fue encerrado en el módulo de aislamiento.",
+    "sin_eliminado_fallback": "Empate o sin votos: nadie fue aislado.",
+    "amanecer_victima_fallback": "{nombre} no despertó.",
+    "amanecer_sin_victima_fallback": "Amaneció y todos siguen en la base.",
+    "estado_eliminado": " (fuera)",
+    "pregunta_voto": "¿A quién aíslas en el módulo?",
+    "pregunta_noche": {
+      "gnosia": "¿A quién atacas esta noche?",
+      "engineer": "¿A quién analizas?",
+      "guardian": "¿A quién proteges?",
+      "doctor": "¿A qué caído examinas?",
+      "crew": "¿Cerca de quién haces guardia?"
+    },
+    "pista_rol": {
+      "gnosia": "Actúa de noche sin que te descubran.",
+      "engineer": "Cada noche podrás analizar la sangre de un compañero.",
+      "guardian": "Cada noche puedes sellar el módulo de un compañero.",
+      "doctor": "Cada noche puedes examinar a un caído.",
+      "crew": "Debate y vota para encontrar a las réplicas."
+    },
+    "informe": {
+      "investigate_malo": "{nombre} es una réplica.",
+      "investigate_bueno": "{nombre} es humano.",
+      "examine_malo": "{nombre} era una réplica.",
+      "examine_bueno": "{nombre} era humano.",
+      "protect": "sellaste el módulo de {nombre}.",
+      "attack": "atacaste a {nombre}.",
+      "reveal_sent": "le dijiste a {nombre} que eres {rol}.",
+      "revealed": "{nombre} te reveló que es {rol}."
+    },
+    "proteger_confirmacion": "Sellaste el módulo de {nombre} toda la noche.",
+    "ronda_con_nombre": "Hiciste guardia cerca de {nombre}. No notaste nada extraño.",
+    "ronda_sin_nombre": "Hiciste tu guardia. No notaste nada extraño.",
+    "sin_fallecidos": "Todavía no hay caídos para examinar.",
+    "observador": "Quedaste fuera. Sigue la partida como espectador.",
+    "soy": "Soy {rol}",
+    "fases": {
+      "NIGHT": "Cae la noche polar",
+      "DAWN": "Amanece en la base",
+      "VOTE": "Hora de aislar",
+      "VOTE_RESULT": "Resultado del aislamiento"
+    },
+    "colores": {
+      "malo": "#5fd0e0"
+    }
+  },
+  "marcadores": {
+    "{lugar}": "nombre del lugar donde ocurre la partida (sorteado de 'lugares')",
+    "{n_tripulantes}": "cantidad total de jugadores",
+    "{n_infectados}": "cantidad de integrantes del bando oculto",
+    "{impulso}": "lo que impulsa al bando oculto, en infinitivo (sorteado de 'impulsos')",
+    "{motivo}": "por qué ese jugador se salvó (sorteado de 'motivos_salvacion')",
+    "{limite}": "por qué el protector solo cubre a uno por noche (sorteado de 'limites_sellado')",
+    "{aliados}": "nombres de los otros integrantes del bando oculto (solo en 'variantes_con_aliados')",
+    "{nombre}": "nombre del jugador afectado (solo en 'eventos')"
+  },
+  "lugares": [
+    "Base Hielo Sur",
+    "Estación Boreal",
+    "Puesto Glaciar 7",
+    "Base Nunatak",
+    "Observatorio Tundra"
+  ],
+  "impulsos": [
+    "absorber a un humano",
+    "reproducirse sin ser vistas",
+    "completar la copia"
+  ],
+  "limites_sellado": [
+    "El sellado de emergencia solo se activa en un módulo a la vez.",
+    "Solo queda una llave maestra de compuertas, y no vuelve hasta el amanecer.",
+    "La reserva de energía no alcanza para cerrar más de una compuerta."
+  ],
+  "motivos_salvacion": [
+    "Estabas aislado por una avería en el módulo de comunicaciones cuando comenzó el contagio.",
+    "Tu análisis de sangre dio negativo la semana pasada, con el médico de testigo.",
+    "Pasaste el primer mes fuera de la base, en una expedición de superficie.",
+    "Llevabas un traje presurizado por una reparación exterior durante el primer incidente.",
+    "Tu turno terminó antes de que la muestra desconocida llegara a la base."
+  ],
+  "general": [
+    "La tormenta cortó toda comunicación con {lugar}. Cuando por fin volvió la señal, el análisis reveló que {n_infectados} de las {n_tripulantes} personas de la base ya no son ellas mismas: algo ocupó su lugar. El registro médico quedó dañado y nadie sabe quiénes son. De noche, las réplicas necesitan {impulso}.",
+    "Un cuerpo extraño apareció en el hielo cerca de {lugar} y alguien lo trajo adentro. Semanas después, {n_infectados} de los {n_tripulantes} habitantes son copias perfectas. Las muestras de sangre se congelaron y se mezclaron. Cuando la base queda en silencio, las réplicas necesitan {impulso}.",
+    "Hace meses que {lugar} no tiene contacto con el exterior y el invierno polar no termina. Algo se metió entre ustedes: {n_infectados} de los {n_tripulantes} integrantes de la base son réplicas. El laboratorio perdió la trazabilidad de las muestras. Las réplicas actúan de noche, porque necesitan {impulso}."
+  ],
+  "roles": {
+    "crew": {
+      "nombre": "Investigador",
+      "alternativas": [
+        "Científico de la base"
+      ],
+      "variantes": [
+        "Eres investigador en {lugar} y sigues siendo tú. {motivo} Aun así, {n_infectados} de las {n_tripulantes} personas de la base son réplicas, y nadie sabe cuáles. Hay que encontrarlas antes de que no quede nadie.",
+        "Duermes con la puerta trabada desde la primera baja. {motivo} Sabes que hay {n_infectados} réplicas entre ustedes y que cada noche alguien puede no despertar. Observa, pregunta y vota con cuidado."
+      ]
+    },
+    "crew_a_bordo": {
+      "nombre": "Personal de la base",
+      "alternativas": [
+        "Operador de radio",
+        "Mecánico de invierno"
+      ],
+      "variantes": [
+        "Estás en {lugar} desde antes de que llegara el hallazgo, y nunca tuviste contacto con la muestra. Entre las {n_tripulantes} personas de la base hay {n_infectados} réplicas. Tu ventaja es conocer cada módulo.",
+        "Llevas todo el invierno operando la radio de {lugar}. Nadie te vio tocar la muestra. Hay {n_infectados} réplicas entre ustedes: fíjate quién se mueve demasiado de noche."
+      ]
+    },
+    "doctor": {
+      "nombre": "Patólogo",
+      "alternativas": [
+        "Médico de la base"
+      ],
+      "variantes": [
+        "Eres el médico de {lugar}. Cada noche puedes examinar a un caído y saber si era una réplica: la sangre de una copia nunca es igual. {motivo}",
+        "Los vivos pueden mentir, pero los cuerpos no. Cada noche eliges a un caído y compruebas si era humano. Tú decides a quién se lo cuentas."
+      ]
+    },
+    "engineer": {
+      "nombre": "Biólogo",
+      "alternativas": [
+        "Técnico de laboratorio"
+      ],
+      "variantes": [
+        "Tienes el único analizador que sigue calibrado. Cada noche puedes tomar una muestra de un compañero y saber si es una réplica. Si lo cuentas, te conviertes en el próximo objetivo.",
+        "Fuiste tú quien trajo la muestra al laboratorio, y quieres corregirlo. Cada noche puedes analizar la sangre de alguien y descubrir qué es. {motivo}"
+      ]
+    },
+    "guardian": {
+      "nombre": "Jefe de seguridad",
+      "alternativas": [
+        "Guardia de la base"
+      ],
+      "variantes": [
+        "Eres responsable de las compuertas de {lugar}. Cada noche puedes sellar el módulo de un compañero: nada podrá entrar. {limite} Nunca sabrás si evitaste un ataque.",
+        "Las réplicas actúan de noche y tú decides qué compuerta queda cerrada. Un módulo, una noche. {limite}"
+      ]
+    },
+    "gnosia": {
+      "nombre": "Réplica",
+      "alternativas": [
+        "Copia",
+        "Intruso"
+      ],
+      "variantes": [
+        "Tu cuerpo es una copia perfecta. Nadie en {lugar} sabe lo que eres, y la necesidad de {impulso} crece con cada hora de oscuridad. Eres una de {n_infectados}. Defiéndete en el debate.",
+        "Cuando las muestras se mezclaron, tu secreto quedó a salvo entre las {n_tripulantes} personas de la base. Necesitas {impulso}. Mantén la fachada humana."
+      ],
+      "variantes_con_aliados": [
+        "Hay otras como tú: {aliados} también son copias. Son {n_infectados} contra toda la base. Coordinen su versión en el debate y no se delaten.",
+        "Se reconocieron sin hablar la primera noche: {aliados} y tú. Comparten la necesidad de {impulso}. De día, compañeros; de noche, colonia."
+      ]
+    }
+  },
+  "eventos": {
+    "eliminado_votacion": [
+      "{nombre} fue encerrado en el módulo de aislamiento por decisión de la base.",
+      "La base decidió aislar a {nombre} hasta nuevo aviso."
+    ],
+    "sin_eliminado": [
+      "Empate o sin votos: nadie fue aislado."
+    ],
+    "amanecer_victima": [
+      "{nombre} no despertó esta mañana.",
+      "Encontraron a {nombre} sin vida en su módulo.",
+      "El módulo de {nombre} amaneció en silencio. Ya no está entre ustedes."
+    ],
+    "amanecer_sin_victima": [
+      "Amaneció y todos siguen en la base.",
+      "La noche pasó en silencio: nadie falta en {lugar}."
+    ],
+    "victoria_sanos": [
+      "Las réplicas fueron aisladas. {lugar} resiste… por ahora.",
+      "Sin réplicas, {lugar} puede esperar el rescate."
+    ],
+    "victoria_infectados": [
+      "Las réplicas ya son tantas como los humanos. {lugar} les pertenece.",
+      "Ya no queda forma de detenerlas: {lugar} cayó en manos de las réplicas."
+    ]
+  }
+}
