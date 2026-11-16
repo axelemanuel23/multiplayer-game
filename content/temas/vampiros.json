@@ -1,0 +1,191 @@
+{
+  "id": "vampiros",
+  "titulo": "Expreso de medianoche",
+  "descripcion": "Un tren detenido por la tormenta, con vampiros entre los pasajeros.",
+  "_leeme": "Tema 'vampiros'. Mismos ids internos de rol que los demás temas: cambian los nombres y los textos, nunca las reglas. Textos semilla: se pueden ampliar.",
+  "ui": {
+    "lugar_etiqueta": "En el tren",
+    "victoria": {
+      "humans": "Ganan los pasajeros.",
+      "gnosia": "Ganan los vampiros."
+    },
+    "eliminado_fallback": "{nombre} fue encerrado en el vagón de carga.",
+    "sin_eliminado_fallback": "Empate o sin votos: nadie fue encerrado.",
+    "amanecer_victima_fallback": "{nombre} no despertó.",
+    "amanecer_sin_victima_fallback": "Amaneció y todos siguen a bordo.",
+    "estado_eliminado": " (fuera)",
+    "pregunta_voto": "¿A quién encierras en el vagón de carga?",
+    "pregunta_noche": {
+      "gnosia": "¿A quién muerdes esta noche?",
+      "engineer": "¿A quién pones a prueba?",
+      "guardian": "¿A quién proteges?",
+      "doctor": "¿A qué caído examinas?",
+      "crew": "¿A quién vigilas desde tu asiento?"
+    },
+    "pista_rol": {
+      "gnosia": "Caza de noche sin que te descubran.",
+      "engineer": "Cada noche podrás poner a prueba a un pasajero.",
+      "guardian": "Cada noche puedes proteger el compartimento de un pasajero.",
+      "doctor": "Cada noche puedes examinar a un caído.",
+      "crew": "Debate y vota para encontrar a los vampiros."
+    },
+    "informe": {
+      "investigate_malo": "{nombre} es un vampiro.",
+      "investigate_bueno": "{nombre} es un pasajero común.",
+      "examine_malo": "{nombre} era un vampiro.",
+      "examine_bueno": "{nombre} era un pasajero común.",
+      "protect": "protegiste el compartimento de {nombre}.",
+      "attack": "mordiste a {nombre}.",
+      "reveal_sent": "le dijiste a {nombre} que eres {rol}.",
+      "revealed": "{nombre} te reveló que es {rol}."
+    },
+    "proteger_confirmacion": "Protegiste el compartimento de {nombre} toda la noche.",
+    "ronda_con_nombre": "Pasaste frente al compartimento de {nombre}. Todo en orden.",
+    "ronda_sin_nombre": "Hiciste tu ronda por el pasillo. Todo en orden.",
+    "sin_fallecidos": "Todavía no hay caídos para examinar.",
+    "observador": "Quedaste fuera. Sigue la partida como espectador.",
+    "soy": "Soy {rol}",
+    "fases": {
+      "NIGHT": "Cae la noche sobre el tren",
+      "DAWN": "Amanece en el tren",
+      "VOTE": "Hora de decidir",
+      "VOTE_RESULT": "Resultado de la votación"
+    },
+    "colores": {
+      "malo": "#b3203a"
+    }
+  },
+  "marcadores": {
+    "{lugar}": "nombre del lugar donde ocurre la partida (sorteado de 'lugares')",
+    "{n_tripulantes}": "cantidad total de jugadores",
+    "{n_infectados}": "cantidad de integrantes del bando oculto",
+    "{impulso}": "lo que impulsa al bando oculto, en infinitivo (sorteado de 'impulsos')",
+    "{motivo}": "por qué ese jugador se salvó (sorteado de 'motivos_salvacion')",
+    "{limite}": "por qué el protector solo cubre a uno por noche (sorteado de 'limites_sellado')",
+    "{aliados}": "nombres de los otros integrantes del bando oculto (solo en 'variantes_con_aliados')",
+    "{nombre}": "nombre del jugador afectado (solo en 'eventos')"
+  },
+  "lugares": [
+    "Expreso del Norte",
+    "Expreso Cárpatos",
+    "Nocturno 9",
+    "Tren Aurora",
+    "Expreso de Plata"
+  ],
+  "impulsos": [
+    "beber sangre",
+    "saciar la sed eterna",
+    "cumplir la orden del conde"
+  ],
+  "limites_sellado": [
+    "Solo te queda un crucifijo bendecido, y no alcanza para más de un compartimento.",
+    "El ajo fresco se acabó: queda para una sola puerta.",
+    "La bendición necesita toda la noche para hacer efecto y solo cubre a una persona."
+  ],
+  "motivos_salvacion": [
+    "Llevas un crucifijo de plata que perteneció a tu familia desde siempre.",
+    "Subiste en la última estación, cuando el tren ya estaba detenido, y todos pueden dar fe.",
+    "Tu reflejo aparece en el espejo del vagón: el maquinista lo comprobó la primera noche.",
+    "Pasaste el día entero bajo el sol de la estación, y eso lo vieron todos.",
+    "El médico del tren te revisó el cuello al subir, antes de cualquier mordedura."
+  ],
+  "general": [
+    "La tormenta cortó las vías y {lugar} quedó detenido en medio de la nada. Entre los {n_tripulantes} pasajeros viajan {n_infectados} vampiros, y la lista de embarque se perdió con el equipaje. Al caer la noche necesitan {impulso}, y los pasillos se vuelven silenciosos.",
+    "Nadie recuerda quién subió a {lugar} con el ataúd. Lo cierto es que {n_infectados} de los {n_tripulantes} viajeros no son lo que parecen, y que cuando oscurece les urge {impulso}. El libro de pasajeros apareció empapado: ya no se leen los nombres.",
+    "{lugar} lleva dos días detenido por un derrumbe. Los {n_tripulantes} pasajeros descubrieron marcas de colmillos en el vagón comedor, y desde entonces saben que {n_infectados} de ellos son vampiros. Por las noches no pueden resistir {impulso}."
+  ],
+  "roles": {
+    "crew": {
+      "nombre": "Pasajero",
+      "alternativas": [
+        "Viajero"
+      ],
+      "variantes": [
+        "Viajas en {lugar} hacia una ciudad que no sabes si volverás a ver. {motivo} Aun así, {n_infectados} de los {n_tripulantes} pasajeros son vampiros y nadie sabe cuáles. Hay que encontrarlos antes del amanecer final.",
+        "Duermes con un ojo abierto desde la primera noche. {motivo} Sabes que hay {n_infectados} vampiros a bordo y que cada noche alguien puede no despertar. Observa, pregunta y vota con cuidado."
+      ]
+    },
+    "crew_a_bordo": {
+      "nombre": "Personal del tren",
+      "alternativas": [
+        "Conductor",
+        "Revisor"
+      ],
+      "variantes": [
+        "Llevas años trabajando en {lugar} y conoces cada vagón. Tu turno empezó antes de que subiera nadie y tu reflejo nunca falló. Entre los {n_tripulantes} pasajeros hay {n_infectados} vampiros; tu ventaja es conocer cada rincón del tren.",
+        "Eres parte de la tripulación original de {lugar}: nunca te bajaste en ninguna estación y nada te mordió. Hay {n_infectados} vampiros entre los viajeros. Fíjate en quién evita el comedor de día."
+      ]
+    },
+    "doctor": {
+      "nombre": "Forense",
+      "alternativas": [
+        "Médico del tren"
+      ],
+      "variantes": [
+        "Eres el médico del tren y has visto demasiadas marcas en demasiados cuellos. Cada noche puedes examinar a un caído y saber si era un vampiro o una víctima. {motivo}",
+        "Los vivos mienten, los muertos no. Cada noche eliges a un caído y buscas en su cuello la verdad. Tú decides a quién se lo cuentas."
+      ]
+    },
+    "engineer": {
+      "nombre": "Cazador de vampiros",
+      "alternativas": [
+        "Inspector"
+      ],
+      "variantes": [
+        "Viajas con una cruz, una estaca y un cuaderno viejo. Cada noche puedes poner a prueba a un pasajero con agua bendita y saber si es un vampiro. Si lo cuentas, te conviertes en el próximo objetivo.",
+        "Tu familia cazó vampiros por generaciones y tú heredaste el oficio. Cada noche puedes examinar a un pasajero y descubrir lo que es. {motivo}"
+      ]
+    },
+    "guardian": {
+      "nombre": "Sacerdote",
+      "alternativas": [
+        "Monje viajero"
+      ],
+      "variantes": [
+        "Viajas con agua bendita y una Biblia gastada. Cada noche puedes bendecir el compartimento de un pasajero: si un vampiro va por esa persona, no podrá entrar. {limite} Nunca sabrás si evitaste algo.",
+        "Los vampiros no pueden cruzar una puerta bendecida, y tú eliges cuál. Un compartimento, una noche. {limite}"
+      ]
+    },
+    "gnosia": {
+      "nombre": "Vampiro",
+      "alternativas": [
+        "Chupasangre",
+        "Nocturno"
+      ],
+      "variantes": [
+        "Llevas siglos viajando de ciudad en ciudad y esta vez quedaste atrapado en {lugar}. De día finges ser un pasajero más; de noche te consume la necesidad de {impulso}. Eres uno de {n_infectados}. Defiéndete en el debate.",
+        "Cuando la lista de pasajeros se arruinó, tu nombre quedó oculto entre los {n_tripulantes}. La sed te exige {impulso}. No dejes que te descubran antes del amanecer."
+      ],
+      "variantes_con_aliados": [
+        "No viajas solo: {aliados} también son vampiros. Son {n_infectados} contra todo {lugar}. Coordinen su versión en el debate y no se delaten.",
+        "Se reconocieron la primera noche, entre el humo del vagón comedor: {aliados} y tú. Comparten la sed de {impulso}. De día pasajeros; de noche, linaje."
+      ]
+    }
+  },
+  "eventos": {
+    "eliminado_votacion": [
+      "{nombre} fue encerrado en el vagón de carga por decisión de los pasajeros.",
+      "Los pasajeros decidieron dejar a {nombre} bajo llave hasta el amanecer."
+    ],
+    "sin_eliminado": [
+      "Empate o sin votos: nadie fue encerrado."
+    ],
+    "amanecer_victima": [
+      "{nombre} no despertó esta mañana.",
+      "Encontraron a {nombre} pálido y con dos marcas en el cuello.",
+      "El compartimento de {nombre} amaneció vacío. Ya no está entre ustedes."
+    ],
+    "amanecer_sin_victima": [
+      "Amaneció y todos siguen a bordo.",
+      "La noche pasó en silencio: nadie falta en {lugar}."
+    ],
+    "victoria_sanos": [
+      "Los vampiros fueron descubiertos. {lugar} retoma su camino… por ahora.",
+      "Sin vampiros a bordo, {lugar} puede seguir su viaje."
+    ],
+    "victoria_infectados": [
+      "Los vampiros ya son tantos como los pasajeros. {lugar} es suyo.",
+      "Ya no queda quién los frene: {lugar} cayó en manos de los vampiros."
+    ]
+  }
+}
