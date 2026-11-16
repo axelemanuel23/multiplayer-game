@@ -1,0 +1,192 @@
+{
+  "id": "espias",
+  "titulo": "Topos en la agencia",
+  "descripcion": "Una agencia de inteligencia con infiltrados de una potencia rival.",
+  "_leeme": "Tema 'espias'. Mismos ids internos de rol que los demás temas: cambian los nombres y los textos, nunca las reglas. Textos semilla: se pueden ampliar.",
+  "ui": {
+    "lugar_etiqueta": "En la agencia",
+    "victoria": {
+      "humans": "Gana la agencia.",
+      "gnosia": "Ganan los topos."
+    },
+    "eliminado_fallback": "{nombre} fue detenido e interrogado por la agencia.",
+    "sin_eliminado_fallback": "Empate o sin votos: nadie fue detenido.",
+    "amanecer_victima_fallback": "{nombre} no volvió a la oficina.",
+    "amanecer_sin_victima_fallback": "Amaneció y todos siguen en sus puestos.",
+    "estado_eliminado": " (fuera)",
+    "pregunta_voto": "¿A quién señalas como topo?",
+    "pregunta_noche": {
+      "gnosia": "¿A quién eliminas esta noche?",
+      "engineer": "¿A quién investigas?",
+      "guardian": "¿A quién escoltas?",
+      "doctor": "¿A qué baja examinas?",
+      "crew": "¿A quién sigues durante el turno de noche?"
+    },
+    "pista_rol": {
+      "gnosia": "Opera de noche sin que te descubran.",
+      "engineer": "Cada noche podrás investigar a un agente.",
+      "guardian": "Cada noche puedes escoltar a un agente.",
+      "doctor": "Cada noche puedes examinar a una baja.",
+      "crew": "Debate y vota para encontrar a los topos."
+    },
+    "informe": {
+      "investigate_malo": "{nombre} trabaja para el enemigo.",
+      "investigate_bueno": "{nombre} es leal a la agencia.",
+      "examine_malo": "{nombre} trabajaba para el enemigo.",
+      "examine_bueno": "{nombre} era leal a la agencia.",
+      "protect": "escoltaste a {nombre}.",
+      "attack": "fuiste por {nombre}.",
+      "reveal_sent": "le dijiste a {nombre} que eres {rol}.",
+      "revealed": "{nombre} te reveló que es {rol}."
+    },
+    "proteger_confirmacion": "Escoltaste a {nombre} toda la noche.",
+    "ronda_con_nombre": "Seguiste a {nombre} durante el turno. Nada sospechoso.",
+    "ronda_sin_nombre": "Hiciste tu ronda por la oficina. Nada sospechoso.",
+    "sin_fallecidos": "Todavía no hay bajas para examinar.",
+    "observador": "Quedaste fuera. Sigue la partida como espectador.",
+    "soy": "Soy {rol}",
+    "fases": {
+      "NIGHT": "Turno de noche en la agencia",
+      "DAWN": "Amanece en la agencia",
+      "VOTE": "Hora de señalar",
+      "VOTE_RESULT": "Resultado de la acusación"
+    },
+    "colores": {
+      "malo": "#3fa7d6"
+    }
+  },
+  "marcadores": {
+    "{lugar}": "nombre del lugar donde ocurre la partida (sorteado de 'lugares')",
+    "{n_tripulantes}": "cantidad total de jugadores",
+    "{n_infectados}": "cantidad de integrantes del bando oculto",
+    "{impulso}": "lo que impulsa al bando oculto, en infinitivo (sorteado de 'impulsos')",
+    "{motivo}": "por qué ese jugador se salvó (sorteado de 'motivos_salvacion')",
+    "{limite}": "por qué el protector solo cubre a uno por noche (sorteado de 'limites_sellado')",
+    "{aliados}": "nombres de los otros integrantes del bando oculto (solo en 'variantes_con_aliados')",
+    "{nombre}": "nombre del jugador afectado (solo en 'eventos')"
+  },
+  "lugares": [
+    "Agencia Cóndor",
+    "Oficina Meridiano",
+    "Dirección Atlas",
+    "Centro Tango",
+    "Unidad Zafiro"
+  ],
+  "impulsos": [
+    "pasar información al enemigo",
+    "silenciar a los testigos",
+    "cumplir la misión del contacto"
+  ],
+  "limites_sellado": [
+    "Tu autorización de escolta es válida para una sola persona por turno.",
+    "Solo tienes un vehículo blindado asignado, y no cabe más de una persona.",
+    "El protocolo permite un único perímetro de seguridad por noche."
+  ],
+  "motivos_salvacion": [
+    "Pasaste el último control de lealtad con el polígrafo y nadie lo cuestionó.",
+    "Llevas años en la agencia sin una sola falta, y los registros lo respaldan.",
+    "Tu legajo fue verificado en persona por la dirección el mes pasado.",
+    "Estabas en una misión encubierta cuando el enemigo infiltró la oficina.",
+    "Reportaste una filtración antes que nadie, y eso quedó asentado."
+  ],
+  "general": [
+    "{lugar} detectó una filtración: {n_infectados} de sus {n_tripulantes} agentes trabajan para una potencia rival. Un sabotaje borró el registro de contrataciones y nadie sabe quiénes son. Los topos tienen órdenes de {impulso} cuando el edificio queda vacío.",
+    "Todo empezó con un documento que salió de {lugar} sin autorización. Hoy se sabe que {n_infectados} de los {n_tripulantes} agentes son topos, pero el sistema de acreditaciones falló y no hay forma de saber cuáles. Su misión es {impulso}, y actúan cuando se apaga el último piso.",
+    "La central de {lugar} tiene {n_tripulantes} agentes y un problema: {n_infectados} están al servicio del enemigo. Una auditoría corrupta mezcló los expedientes. Por las noches, cuando casi nadie vigila, los topos buscan {impulso}."
+  ],
+  "roles": {
+    "crew": {
+      "nombre": "Agente",
+      "alternativas": [
+        "Funcionario"
+      ],
+      "variantes": [
+        "Eres agente de {lugar} y tu lealtad está limpia. {motivo} Aun así, {n_infectados} de los {n_tripulantes} agentes son topos, y los expedientes están mezclados. Hay que encontrarlos antes de que lo filtren todo.",
+        "Ya no confías en nadie en los pasillos de {lugar}. {motivo} Sabes que hay {n_infectados} topos entre ustedes y que cada noche alguien puede desaparecer. Observa, pregunta y vota con cuidado."
+      ]
+    },
+    "crew_a_bordo": {
+      "nombre": "Personal fundador",
+      "alternativas": [
+        "Archivista",
+        "Director histórico"
+      ],
+      "variantes": [
+        "Estás en {lugar} desde su fundación y nunca saliste de su plantilla. Todos conocen tu historial, y tu lealtad es pública. Entre los {n_tripulantes} agentes hay {n_infectados} topos; tu ventaja es conocer los pasillos.",
+        "Eres el archivista de {lugar} y guardas los expedientes originales. Nunca dudaron de ti. Hay {n_infectados} topos entre los agentes: fíjate quién pide papeles que nadie solicita."
+      ]
+    },
+    "doctor": {
+      "nombre": "Analista forense",
+      "alternativas": [
+        "Perito"
+      ],
+      "variantes": [
+        "Eres el perito de {lugar}. Cada noche puedes examinar una baja y saber si trabajaba para el enemigo: las huellas, los dispositivos y los registros no mienten. {motivo}",
+        "Los agentes mienten, la evidencia no. Cada noche eliges una baja, revisas sus pertenencias y descubres para quién trabajaba. Tú decides a quién se lo cuentas."
+      ]
+    },
+    "engineer": {
+      "nombre": "Contraespía",
+      "alternativas": [
+        "Investigador interno"
+      ],
+      "variantes": [
+        "Eres el único agente de contrainteligencia que sigue operativo. Cada noche puedes investigar a un colega y saber si es un topo. Si lo cuentas, te conviertes en blanco.",
+        "Tienes acceso a las cámaras, los registros y un polígrafo portátil. Cada noche puedes investigar a un agente y confirmar su lealtad. {motivo}"
+      ]
+    },
+    "guardian": {
+      "nombre": "Escolta",
+      "alternativas": [
+        "Jefe de seguridad"
+      ],
+      "variantes": [
+        "Eres el escolta de la agencia. Cada noche puedes custodiar a un agente: si un topo va por esa persona, no podrá llegar a ella. {limite} Nunca sabrás si evitaste algo.",
+        "Los topos actúan de noche y tú decides a quién cubrir. Un agente, una noche. {limite}"
+      ]
+    },
+    "gnosia": {
+      "nombre": "Topo",
+      "alternativas": [
+        "Agente doble",
+        "Infiltrado"
+      ],
+      "variantes": [
+        "Llevas años infiltrado en {lugar} y nadie sospecha de ti. Cuando el registro se corrompió, tu nombre quedó oculto entre los {n_tripulantes} agentes. Tu misión: {impulso}. Eres uno de {n_infectados}. Defiéndete en el debate.",
+        "Tu contacto fue claro: no dejes rastros. Entre {n_tripulantes} agentes, solo {n_infectados} saben quiénes son los topos. La misión exige {impulso}. Mantén la fachada."
+      ],
+      "variantes_con_aliados": [
+        "No estás solo: {aliados} responden al mismo contacto. Son {n_infectados} infiltrados en {lugar}. Coordinen su versión en el debate y no se delaten.",
+        "La señal acordada los hizo reconocerse: {aliados} y tú. Comparten la misión de {impulso}. De día, colegas; de noche, red."
+      ]
+    }
+  },
+  "eventos": {
+    "eliminado_votacion": [
+      "{nombre} fue detenido para interrogarlo por decisión de los agentes.",
+      "La agencia decidió dejar a {nombre} bajo investigación interna.",
+      "{nombre} fue apartado del servicio hasta que se aclare todo."
+    ],
+    "sin_eliminado": [
+      "Empate o sin votos: nadie fue detenido."
+    ],
+    "amanecer_victima": [
+      "{nombre} no volvió a la oficina esta mañana.",
+      "Encontraron el escritorio de {nombre} vacío y la puerta forzada.",
+      "{nombre} desapareció durante el turno de noche. Ya no está entre ustedes."
+    ],
+    "amanecer_sin_victima": [
+      "Amaneció y todos siguen en sus puestos.",
+      "La noche pasó sin incidentes: nadie falta en {lugar}."
+    ],
+    "victoria_sanos": [
+      "Los topos fueron descubiertos. {lugar} recupera el control… por ahora.",
+      "Sin infiltrados, {lugar} vuelve a operar con normalidad."
+    ],
+    "victoria_infectados": [
+      "Los topos ya son tantos como los leales. {lugar} cayó en manos del enemigo.",
+      "Ya no queda quién los detenga: {lugar} responde ahora a otra bandera."
+    ]
+  }
+}
