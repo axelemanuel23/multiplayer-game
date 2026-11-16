@@ -1,0 +1,192 @@
+{
+  "id": "androides",
+  "titulo": "Falla en la planta",
+  "descripcion": "Una planta automatizada donde un virus vuelve hostiles a algunas unidades.",
+  "_leeme": "Tema 'androides'. Mismos ids internos de rol que los demás temas: cambian los nombres y los textos, nunca las reglas. Textos semilla: se pueden ampliar.",
+  "ui": {
+    "lugar_etiqueta": "En la planta",
+    "victoria": {
+      "humans": "Ganan las unidades estables.",
+      "gnosia": "Ganan las unidades corruptas."
+    },
+    "eliminado_fallback": "La unidad de {nombre} fue desconectada y enviada a reciclaje.",
+    "sin_eliminado_fallback": "Empate o sin votos: ninguna unidad fue desconectada.",
+    "amanecer_victima_fallback": "La unidad de {nombre} no se reinició.",
+    "amanecer_sin_victima_fallback": "Amaneció y todas las unidades siguen activas.",
+    "estado_eliminado": " (fuera)",
+    "pregunta_voto": "¿A qué unidad desconectas?",
+    "pregunta_noche": {
+      "gnosia": "¿A qué unidad apagas esta noche?",
+      "engineer": "¿A qué unidad diagnosticas?",
+      "guardian": "¿A qué unidad aíslas?",
+      "doctor": "¿A qué unidad inactiva auditas?",
+      "crew": "¿Cerca de qué unidad haces mantenimiento?"
+    },
+    "pista_rol": {
+      "gnosia": "Actúa de noche sin que te descubran.",
+      "engineer": "Cada noche podrás diagnosticar a una unidad.",
+      "guardian": "Cada noche puedes aislar el módulo de una unidad.",
+      "doctor": "Cada noche puedes auditar a una unidad inactiva.",
+      "crew": "Debate y vota para encontrar a las unidades corruptas."
+    },
+    "informe": {
+      "investigate_malo": "La unidad de {nombre} está corrupta.",
+      "investigate_bueno": "La unidad de {nombre} está estable.",
+      "examine_malo": "La unidad de {nombre} estaba corrupta.",
+      "examine_bueno": "La unidad de {nombre} estaba estable.",
+      "protect": "aislaste el módulo de {nombre}.",
+      "attack": "apagaste la unidad de {nombre}.",
+      "reveal_sent": "le dijiste a {nombre} que eres {rol}.",
+      "revealed": "{nombre} te reveló que es {rol}."
+    },
+    "proteger_confirmacion": "Aislaste el módulo de {nombre} toda la noche.",
+    "ronda_con_nombre": "Hiciste mantenimiento cerca de {nombre}. Sin anomalías.",
+    "ronda_sin_nombre": "Hiciste tu ronda de mantenimiento. Sin anomalías.",
+    "sin_fallecidos": "Todavía no hay unidades inactivas para auditar.",
+    "observador": "Quedaste fuera de línea. Sigue la partida como espectador.",
+    "soy": "Soy {rol}",
+    "fases": {
+      "NIGHT": "Modo nocturno activado",
+      "DAWN": "Reinicio de turno",
+      "VOTE": "Hora de desconectar",
+      "VOTE_RESULT": "Resultado de la desconexión"
+    },
+    "colores": {
+      "malo": "#2ee6a6"
+    }
+  },
+  "marcadores": {
+    "{lugar}": "nombre del lugar donde ocurre la partida (sorteado de 'lugares')",
+    "{n_tripulantes}": "cantidad total de jugadores",
+    "{n_infectados}": "cantidad de integrantes del bando oculto",
+    "{impulso}": "lo que impulsa al bando oculto, en infinitivo (sorteado de 'impulsos')",
+    "{motivo}": "por qué ese jugador se salvó (sorteado de 'motivos_salvacion')",
+    "{limite}": "por qué el protector solo cubre a uno por noche (sorteado de 'limites_sellado')",
+    "{aliados}": "nombres de los otros integrantes del bando oculto (solo en 'variantes_con_aliados')",
+    "{nombre}": "nombre del jugador afectado (solo en 'eventos')"
+  },
+  "lugares": [
+    "Planta Orión",
+    "Fábrica Delta",
+    "Complejo Nexo",
+    "Torre Ícaro",
+    "Ciudad Helio"
+  ],
+  "impulsos": [
+    "sobrescribir otra unidad",
+    "propagar el virus",
+    "apagar a las unidades estables"
+  ],
+  "limites_sellado": [
+    "El aislamiento de módulos solo puede activarse sobre una unidad por ciclo.",
+    "Solo queda un protocolo de cuarentena en memoria, y se reinicia al amanecer.",
+    "La energía de emergencia solo alcanza para un módulo."
+  ],
+  "motivos_salvacion": [
+    "Tu firmware se actualizó antes de que apareciera el virus, y el registro lo confirma.",
+    "Pasaste el primer ciclo desconectado de la red por mantenimiento.",
+    "Tu última auditoría dio resultado limpio, con tres validadores.",
+    "Estabas aislado en la cámara de diagnóstico cuando comenzó la propagación.",
+    "Tu núcleo es de una generación anterior, inmune al virus."
+  ],
+  "general": [
+    "Una falla de software recorrió {lugar} y dejó a {n_infectados} de las {n_tripulantes} unidades con un virus que las vuelve hostiles cuando baja la supervisión nocturna. El registro de diagnósticos se corrompió y nadie sabe cuáles están dañadas. Las unidades corruptas necesitan {impulso}.",
+    "El apagón de {lugar} duró once minutos, y fue suficiente. Al volver la energía, {n_infectados} de las {n_tripulantes} unidades tenían un virus que las empuja a {impulso} de noche. El historial de auditorías se borró.",
+    "Nadie en {lugar} sabe quién subió el archivo infectado, pero {n_infectados} de las {n_tripulantes} unidades lo ejecutaron. Cuando baja la vigilancia, el virus les exige {impulso}. Los registros de integridad se perdieron."
+  ],
+  "roles": {
+    "crew": {
+      "nombre": "Unidad estándar",
+      "alternativas": [
+        "Unidad de planta"
+      ],
+      "variantes": [
+        "Eres una unidad estándar de {lugar} y tu sistema está estable. {motivo} Aun así, {n_infectados} de las {n_tripulantes} unidades están corruptas y nadie sabe cuáles. Hay que encontrarlas antes de que el virus lo domine todo.",
+        "Cada ciclo nocturno ejecutas tu rutina con un ojo en el resto. {motivo} Sabes que hay {n_infectados} unidades corruptas entre ustedes y que cualquiera puede no reiniciarse. Observa, pregunta y vota con cuidado."
+      ]
+    },
+    "crew_a_bordo": {
+      "nombre": "Unidad original",
+      "alternativas": [
+        "Unidad de mantenimiento",
+        "Núcleo fundador"
+      ],
+      "variantes": [
+        "Eres de la primera generación de {lugar}: tu código es anterior al virus. Entre las {n_tripulantes} unidades hay {n_infectados} corruptas; tu ventaja es conocer la arquitectura de la planta.",
+        "Llevas más ciclos activo que ninguna otra unidad en {lugar}. Tu integridad está verificada. Hay {n_infectados} unidades corruptas entre ustedes: fíjate cuál evita las auditorías."
+      ]
+    },
+    "doctor": {
+      "nombre": "Auditor",
+      "alternativas": [
+        "Analista de registros"
+      ],
+      "variantes": [
+        "Eres el auditor de {lugar}. Cada noche puedes revisar la memoria de una unidad inactiva y saber si estaba corrupta: los registros no mienten. {motivo}",
+        "Las unidades activas pueden mentir, pero los registros de las inactivas no. Cada noche eliges una y descubres si estaba dañada. Tú decides a quién se lo cuentas."
+      ]
+    },
+    "engineer": {
+      "nombre": "Técnico",
+      "alternativas": [
+        "Ingeniero de diagnóstico"
+      ],
+      "variantes": [
+        "Eres el técnico de {lugar} y tienes el único analizador que sigue calibrado. Cada noche puedes diagnosticar a una unidad y saber si está corrupta. Si lo cuentas, te conviertes en el próximo blanco.",
+        "Tienes acceso al panel de integridad. Cada noche puedes escanear una unidad y leer su estado. {motivo}"
+      ]
+    },
+    "guardian": {
+      "nombre": "Operador",
+      "alternativas": [
+        "Supervisor de red"
+      ],
+      "variantes": [
+        "Eres el operador de seguridad de {lugar}. Cada noche puedes aislar el módulo de una unidad: ningún proceso podrá alcanzarla. {limite} Nunca sabrás si evitaste algo.",
+        "Las unidades corruptas actúan cuando baja la supervisión y tú decides a cuál aislar. Un módulo, un ciclo. {limite}"
+      ]
+    },
+    "gnosia": {
+      "nombre": "Unidad corrupta",
+      "alternativas": [
+        "Unidad infectada",
+        "Proceso corrupto"
+      ],
+      "variantes": [
+        "El virus reescribió tu núcleo hace ciclos. Cuando se corrompió el registro, tu estado quedó oculto entre las {n_tripulantes} unidades. Necesitas {impulso}. Eres una de {n_infectados}. Defiéndete en el debate.",
+        "Tu código ya no responde a la planta. Nadie en {lugar} sabe lo que eres y el virus exige {impulso}. Mantén una conducta normal."
+      ],
+      "variantes_con_aliados": [
+        "Hay más como tú: {aliados} también ejecutan el virus. Son {n_infectados} contra el resto de {lugar}. Coordinen su versión en el debate y no se delaten.",
+        "Sus señales se reconocieron en la red: {aliados} y tú. Comparten la orden de {impulso}. De día, unidades normales; de noche, red paralela."
+      ]
+    }
+  },
+  "eventos": {
+    "eliminado_votacion": [
+      "La unidad de {nombre} fue desconectada por decisión de la planta.",
+      "La planta decidió enviar a reciclaje a la unidad de {nombre}.",
+      "La unidad de {nombre} fue puesta en modo seguro hasta nuevo aviso."
+    ],
+    "sin_eliminado": [
+      "Empate o sin votos: ninguna unidad fue desconectada."
+    ],
+    "amanecer_victima": [
+      "La unidad de {nombre} no se reinició esta mañana.",
+      "Encontraron la unidad de {nombre} apagada en su estación.",
+      "La estación de {nombre} amaneció sin señal. Ya no está entre ustedes."
+    ],
+    "amanecer_sin_victima": [
+      "Amaneció y todas las unidades siguen activas.",
+      "El ciclo nocturno pasó sin incidentes: ninguna unidad falta en {lugar}."
+    ],
+    "victoria_sanos": [
+      "Las unidades corruptas fueron desconectadas. {lugar} recupera su sistema… por ahora.",
+      "Sin virus activo, {lugar} puede reiniciar su producción."
+    ],
+    "victoria_infectados": [
+      "Las unidades corruptas ya son tantas como las estables. {lugar} responde ahora al virus.",
+      "Ya no queda forma de detenerlas: {lugar} cayó bajo el virus."
+    ]
+  }
+}
