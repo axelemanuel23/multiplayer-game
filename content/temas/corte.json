@@ -1,0 +1,192 @@
+{
+  "id": "corte",
+  "titulo": "Conjura en la corte",
+  "descripcion": "Un reino donde algunos cortesanos traman la caída de la corona.",
+  "_leeme": "Tema 'corte'. Mismos ids internos de rol que los demás temas: cambian los nombres y los textos, nunca las reglas. Textos semilla: se pueden ampliar.",
+  "ui": {
+    "lugar_etiqueta": "En la corte",
+    "victoria": {
+      "humans": "Gana la corte.",
+      "gnosia": "Ganan los conjurados."
+    },
+    "eliminado_fallback": "{nombre} fue arrestado y llevado al calabozo.",
+    "sin_eliminado_fallback": "Empate o sin votos: nadie fue arrestado.",
+    "amanecer_victima_fallback": "{nombre} no despertó.",
+    "amanecer_sin_victima_fallback": "Amaneció y toda la corte sigue en pie.",
+    "estado_eliminado": " (fuera)",
+    "pregunta_voto": "¿A quién envías al calabozo?",
+    "pregunta_noche": {
+      "gnosia": "¿A quién eliminas esta noche?",
+      "engineer": "¿A quién investigas?",
+      "guardian": "¿A quién custodias?",
+      "doctor": "¿A qué caído examinas?",
+      "crew": "¿A quién vigilas durante la noche?"
+    },
+    "pista_rol": {
+      "gnosia": "Conspira de noche sin que te descubran.",
+      "engineer": "Cada noche podrás investigar a un cortesano.",
+      "guardian": "Cada noche puedes custodiar la alcoba de un cortesano.",
+      "doctor": "Cada noche puedes examinar a un caído.",
+      "crew": "Debate y vota para encontrar a los conjurados."
+    },
+    "informe": {
+      "investigate_malo": "{nombre} es un conjurado.",
+      "investigate_bueno": "{nombre} es leal a la corona.",
+      "examine_malo": "{nombre} era un conjurado.",
+      "examine_bueno": "{nombre} era leal a la corona.",
+      "protect": "custodiaste la alcoba de {nombre}.",
+      "attack": "fuiste por {nombre}.",
+      "reveal_sent": "le dijiste a {nombre} que eres {rol}.",
+      "revealed": "{nombre} te reveló que es {rol}."
+    },
+    "proteger_confirmacion": "Custodiaste la alcoba de {nombre} toda la noche.",
+    "ronda_con_nombre": "Pasaste por la alcoba de {nombre}. Todo en orden.",
+    "ronda_sin_nombre": "Hiciste tu ronda por los pasillos. Todo en orden.",
+    "sin_fallecidos": "Todavía no hay caídos para examinar.",
+    "observador": "Quedaste fuera. Sigue la partida como espectador.",
+    "soy": "Soy {rol}",
+    "fases": {
+      "NIGHT": "Cae la noche sobre la corte",
+      "DAWN": "Amanece en el palacio",
+      "VOTE": "Hora del tribunal",
+      "VOTE_RESULT": "Resultado del tribunal"
+    },
+    "colores": {
+      "malo": "#e84a5f"
+    }
+  },
+  "marcadores": {
+    "{lugar}": "nombre del lugar donde ocurre la partida (sorteado de 'lugares')",
+    "{n_tripulantes}": "cantidad total de jugadores",
+    "{n_infectados}": "cantidad de integrantes del bando oculto",
+    "{impulso}": "lo que impulsa al bando oculto, en infinitivo (sorteado de 'impulsos')",
+    "{motivo}": "por qué ese jugador se salvó (sorteado de 'motivos_salvacion')",
+    "{limite}": "por qué el protector solo cubre a uno por noche (sorteado de 'limites_sellado')",
+    "{aliados}": "nombres de los otros integrantes del bando oculto (solo en 'variantes_con_aliados')",
+    "{nombre}": "nombre del jugador afectado (solo en 'eventos')"
+  },
+  "lugares": [
+    "Valmora",
+    "Arganda",
+    "Montbrun",
+    "Eldoria",
+    "Altamira"
+  ],
+  "impulsos": [
+    "envenenar al rey",
+    "apoderarse del trono",
+    "entregar el reino al enemigo"
+  ],
+  "limites_sellado": [
+    "La guardia real solo tiene una llave de las alcobas por noche.",
+    "El sello real solo autoriza una custodia por noche.",
+    "El capitán de la guardia solo dispone de un soldado de confianza."
+  ],
+  "motivos_salvacion": [
+    "Tu familia sirve a la corona desde hace cuatro generaciones.",
+    "Salvaste la vida del rey en el último torneo, y toda la corte lo vio.",
+    "Tu nombre figura en el registro de nobles que juraron lealtad ante el obispo.",
+    "Pasaste la semana del primer envenenamiento en el campo, con testigos.",
+    "El rey en persona te encargó vigilar la despensa, y nunca fallaste."
+  ],
+  "general": [
+    "En la corte de {lugar} se susurra una conjura. Entre los {n_tripulantes} cortesanos hay {n_infectados} conjurados decididos a {impulso}. El registro de juramentos de lealtad se quemó y nadie sabe quiénes juraron en falso.",
+    "El rey cayó enfermo y la corte de {lugar} entró en pánico. {n_infectados} de los {n_tripulantes} cortesanos preparan la caída de la corona: quieren {impulso}. El libro de juramentos desapareció de la biblioteca.",
+    "Nadie sabe quién abrió las puertas de {lugar} al enemigo, pero {n_infectados} de los {n_tripulantes} cortesanos lo hicieron. Su plan es {impulso}, y actúan cuando la corte duerme. La lista de nobles leales ya no existe."
+  ],
+  "roles": {
+    "crew": {
+      "nombre": "Cortesano",
+      "alternativas": [
+        "Noble"
+      ],
+      "variantes": [
+        "Eres cortesano en {lugar} y tu lealtad a la corona es sincera. {motivo} Aun así, {n_infectados} de los {n_tripulantes} cortesanos conspiran, y nadie sabe cuáles. Hay que encontrarlos antes de que caiga el reino.",
+        "Cada noche cierras la puerta de tu alcoba con llave y rezas. {motivo} Sabes que hay {n_infectados} conjurados entre ustedes y que alguien puede no despertar. Observa, pregunta y vota con cuidado."
+      ]
+    },
+    "crew_a_bordo": {
+      "nombre": "Guardia real",
+      "alternativas": [
+        "Chambelán",
+        "Paje del rey"
+      ],
+      "variantes": [
+        "Sirves a la corona de {lugar} desde la infancia y nadie duda de ti. Entre los {n_tripulantes} cortesanos hay {n_infectados} conjurados; tu ventaja es conocer cada pasillo del palacio.",
+        "Eres el chambelán del rey y conoces los secretos de la corte. Nunca te tentaron. Hay {n_infectados} conjurados entre ustedes: fíjate quién visita la despensa de noche."
+      ]
+    },
+    "doctor": {
+      "nombre": "Médico real",
+      "alternativas": [
+        "Boticario"
+      ],
+      "variantes": [
+        "Eres el médico de la corte. Cada noche puedes examinar a un caído y saber si conspiraba: las cartas y los venenos que lleva encima no mienten. {motivo}",
+        "Los vivos mienten, pero los muertos no. Cada noche eliges a un caído y revisas sus pertenencias para saber de qué lado estaba. Tú decides a quién se lo cuentas."
+      ]
+    },
+    "engineer": {
+      "nombre": "Consejero",
+      "alternativas": [
+        "Espía de la corona"
+      ],
+      "variantes": [
+        "Eres el consejero de confianza del rey, y tu red de informantes llega a cada rincón. Cada noche puedes investigar a un cortesano y saber si es un conjurado. Si lo cuentas, te conviertes en blanco.",
+        "Tienes ojos y oídos en cada pasillo. Cada noche puedes investigar a un cortesano y confirmar su lealtad. {motivo}"
+      ]
+    },
+    "guardian": {
+      "nombre": "Capitán de la guardia",
+      "alternativas": [
+        "Escolta real"
+      ],
+      "variantes": [
+        "Eres el capitán de la guardia real. Cada noche puedes custodiar la alcoba de un cortesano: nadie podrá entrar. {limite} Nunca sabrás si evitaste algo.",
+        "Los conjurados actúan cuando la corte duerme y tú decides qué puerta custodiar. Una alcoba, una noche. {limite}"
+      ]
+    },
+    "gnosia": {
+      "nombre": "Conjurado",
+      "alternativas": [
+        "Traidor",
+        "Conspirador"
+      ],
+      "variantes": [
+        "Juraste lealtad al rey con la mano en el pecho y con otra intención. Cuando se perdió el registro, tu nombre quedó oculto entre los {n_tripulantes} cortesanos. Tu plan: {impulso}. Eres uno de {n_infectados}. Defiéndete en el debate.",
+        "La corona te negó lo que creías merecer. Nadie en {lugar} sabe lo que eres, y tu plan exige {impulso}. No dejes que sospechen de ti."
+      ],
+      "variantes_con_aliados": [
+        "No conspiras solo: {aliados} están contigo. Son {n_infectados} contra toda la corte. Coordinen su versión en el debate y no se delaten.",
+        "Una mirada durante el banquete bastó para reconocerse: {aliados} y tú. Comparten el plan de {impulso}. De día, cortesanos; de noche, conspiradores."
+      ]
+    }
+  },
+  "eventos": {
+    "eliminado_votacion": [
+      "{nombre} fue arrestado y llevado al calabozo por decisión de la corte.",
+      "La corte decidió desterrar a {nombre} hasta que se aclare todo.",
+      "{nombre} fue encerrado en la torre hasta nuevo aviso."
+    ],
+    "sin_eliminado": [
+      "Empate o sin votos: nadie fue arrestado."
+    ],
+    "amanecer_victima": [
+      "{nombre} no despertó esta mañana.",
+      "Encontraron a {nombre} sin vida en su alcoba.",
+      "La alcoba de {nombre} amaneció en silencio. Ya no está entre ustedes."
+    ],
+    "amanecer_sin_victima": [
+      "Amaneció y toda la corte sigue en pie.",
+      "La noche pasó en calma: nadie falta en {lugar}."
+    ],
+    "victoria_sanos": [
+      "Los conjurados fueron descubiertos. {lugar} conserva su corona… por ahora.",
+      "Sin traidores, la corte de {lugar} puede respirar."
+    ],
+    "victoria_infectados": [
+      "Los conjurados ya son tantos como los leales. {lugar} cambió de manos.",
+      "Ya no queda quién los detenga: la corona de {lugar} cayó."
+    ]
+  }
+}
