@@ -1,0 +1,191 @@
+{
+  "id": "piratas",
+  "titulo": "Motín a bordo",
+  "descripcion": "Un barco con traidores aliados de un capitán rival.",
+  "_leeme": "Tema 'piratas'. Mismos ids internos de rol que los demás temas: cambian los nombres y los textos, nunca las reglas. Textos semilla: se pueden ampliar.",
+  "ui": {
+    "lugar_etiqueta": "En el barco",
+    "victoria": {
+      "humans": "Gana la tripulación.",
+      "gnosia": "Ganan los amotinados."
+    },
+    "eliminado_fallback": "{nombre} fue encerrado en la bodega.",
+    "sin_eliminado_fallback": "Empate o sin votos: nadie fue encerrado.",
+    "amanecer_victima_fallback": "{nombre} no despertó.",
+    "amanecer_sin_victima_fallback": "Amaneció y todos siguen a bordo.",
+    "estado_eliminado": " (fuera)",
+    "pregunta_voto": "¿A quién acusas de amotinado?",
+    "pregunta_noche": {
+      "gnosia": "¿A quién eliminas en la guardia?",
+      "engineer": "¿A quién investigas?",
+      "guardian": "¿A quién custodias?",
+      "doctor": "¿A qué caído examinas?",
+      "crew": "¿A quién vigilas durante la guardia?"
+    },
+    "pista_rol": {
+      "gnosia": "Actúa en la guardia nocturna sin que te descubran.",
+      "engineer": "Cada noche podrás investigar a un tripulante.",
+      "guardian": "Cada noche puedes custodiar la litera de un tripulante.",
+      "doctor": "Cada noche puedes examinar a un caído.",
+      "crew": "Debate y vota para encontrar a los amotinados."
+    },
+    "informe": {
+      "investigate_malo": "{nombre} es un amotinado.",
+      "investigate_bueno": "{nombre} es leal al capitán.",
+      "examine_malo": "{nombre} era un amotinado.",
+      "examine_bueno": "{nombre} era leal al capitán.",
+      "protect": "custodiaste la litera de {nombre}.",
+      "attack": "fuiste por {nombre}.",
+      "reveal_sent": "le dijiste a {nombre} que eres {rol}.",
+      "revealed": "{nombre} te reveló que es {rol}."
+    },
+    "proteger_confirmacion": "Custodiaste la litera de {nombre} toda la guardia.",
+    "ronda_con_nombre": "Rondaste cerca de {nombre}. Nada sospechoso.",
+    "ronda_sin_nombre": "Hiciste tu ronda por cubierta. Nada sospechoso.",
+    "sin_fallecidos": "Todavía no hay caídos para examinar.",
+    "observador": "Quedaste fuera. Sigue la partida como espectador.",
+    "soy": "Soy {rol}",
+    "fases": {
+      "NIGHT": "Guardia de noche",
+      "DAWN": "Amanece en cubierta",
+      "VOTE": "Hora del juicio",
+      "VOTE_RESULT": "Resultado del juicio"
+    },
+    "colores": {
+      "malo": "#e67e22"
+    }
+  },
+  "marcadores": {
+    "{lugar}": "nombre del lugar donde ocurre la partida (sorteado de 'lugares')",
+    "{n_tripulantes}": "cantidad total de jugadores",
+    "{n_infectados}": "cantidad de integrantes del bando oculto",
+    "{impulso}": "lo que impulsa al bando oculto, en infinitivo (sorteado de 'impulsos')",
+    "{motivo}": "por qué ese jugador se salvó (sorteado de 'motivos_salvacion')",
+    "{limite}": "por qué el protector solo cubre a uno por noche (sorteado de 'limites_sellado')",
+    "{aliados}": "nombres de los otros integrantes del bando oculto (solo en 'variantes_con_aliados')",
+    "{nombre}": "nombre del jugador afectado (solo en 'eventos')"
+  },
+  "lugares": [
+    "El Albatros",
+    "La Sirena Rota",
+    "El Cormorán",
+    "La Estrella Pálida",
+    "El Intrépido"
+  ],
+  "impulsos": [
+    "apoderarse del tesoro",
+    "entregar el barco al capitán rival",
+    "vengarse del capitán"
+  ],
+  "limites_sellado": [
+    "Solo tienes una llave de la bodega, y no vuelve a tus manos hasta el amanecer.",
+    "El capitán solo te asignó una litera por guardia.",
+    "La guardia nocturna es de un solo turno y de un solo puesto."
+  ],
+  "motivos_salvacion": [
+    "Llevas veinte años navegando bajo la bandera del capitán y nunca fallaste una guardia.",
+    "Salvaste al capitán en el último abordaje, y todos lo vieron.",
+    "Te embarcaste en el último puerto, cuando el motín ya se cocinaba y nadie te conocía.",
+    "El contramaestre jura que cobraste tu sueldo completo y que nunca aceptaste otro oro.",
+    "Estabas encadenado en la bodega por una disputa cuando comenzó la conspiración."
+  ],
+  "general": [
+    "A bordo de {lugar} el aire se enrareció desde que el capitán rival ofreció oro a cambio de lealtades. Entre los {n_tripulantes} tripulantes hay {n_infectados} amotinados que buscan {impulso}. El libro de bitácora con la lista de leales se hundió y nadie sabe quiénes son.",
+    "El mapa del tesoro apareció en la cabina de {lugar} y con él, la traición. {n_infectados} de los {n_tripulantes} tripulantes aceptaron el trato de un capitán enemigo: {impulso}. La lista de la tripulación se perdió en la tormenta.",
+    "Nadie en {lugar} duerme tranquilo desde la última isla. {n_infectados} de los {n_tripulantes} marineros cambiaron de bando y esperan la noche para actuar: quieren {impulso}. El libro de contratos terminó en el mar."
+  ],
+  "roles": {
+    "crew": {
+      "nombre": "Marinero",
+      "alternativas": [
+        "Grumete"
+      ],
+      "variantes": [
+        "Eres marinero de {lugar} y juraste lealtad al capitán. {motivo} Aun así, {n_infectados} de los {n_tripulantes} tripulantes son amotinados y nadie sabe cuáles. Hay que encontrarlos antes de que no quede quién gobierne el timón.",
+        "Duermes con el cuchillo bajo la almohada desde que empezaron los rumores. {motivo} Sabes que hay {n_infectados} amotinados entre ustedes y que cada guardia alguien puede desaparecer. Observa, pregunta y vota con cuidado."
+      ]
+    },
+    "crew_a_bordo": {
+      "nombre": "Oficial del capitán",
+      "alternativas": [
+        "Carpintero del barco",
+        "Timonel"
+      ],
+      "variantes": [
+        "Estás a bordo de {lugar} desde su botadura y nadie duda de tu lealtad. Entre los {n_tripulantes} tripulantes hay {n_infectados} amotinados; tu ventaja es conocer cada rincón del barco.",
+        "Llevas más años a bordo que nadie. El capitán confía en ti, y la tripulación también. Hay {n_infectados} amotinados entre ustedes: fíjate quién evita la guardia del timón."
+      ]
+    },
+    "doctor": {
+      "nombre": "Cirujano",
+      "alternativas": [
+        "Sangrador del barco"
+      ],
+      "variantes": [
+        "Eres el cirujano de {lugar}. Cada noche puedes examinar a un caído y saber si estaba del lado de los amotinados: los papeles que llevaba encima no mienten. {motivo}",
+        "Los vivos mienten, pero los bolsillos de los muertos no. Cada noche eliges a un caído y descubres de qué lado estaba. Tú decides a quién se lo cuentas."
+      ]
+    },
+    "engineer": {
+      "nombre": "Navegante",
+      "alternativas": [
+        "Contramaestre"
+      ],
+      "variantes": [
+        "Eres el navegante de {lugar} y lees lo que otros no ven: rumbos, firmas, silencios. Cada noche puedes investigar a un tripulante y saber si es un amotinado. Si lo cuentas, te conviertes en el próximo blanco.",
+        "Tienes la bitácora y un ojo entrenado para detectar traiciones. Cada noche puedes investigar a un tripulante y confirmar su lealtad. {motivo}"
+      ]
+    },
+    "guardian": {
+      "nombre": "Guardia del capitán",
+      "alternativas": [
+        "Vigía de camarote"
+      ],
+      "variantes": [
+        "Eres el guardia de confianza del capitán. Cada noche puedes custodiar la litera de un tripulante: nadie podrá tocarlo. {limite} Nunca sabrás si evitaste algo.",
+        "Los amotinados actúan en la guardia nocturna y tú decides qué litera cubrir. Una litera, una noche. {limite}"
+      ]
+    },
+    "gnosia": {
+      "nombre": "Amotinado",
+      "alternativas": [
+        "Traidor",
+        "Conspirador"
+      ],
+      "variantes": [
+        "Aceptaste el oro del capitán rival. Cuando se perdió la bitácora, tu nombre quedó oculto entre los {n_tripulantes} tripulantes. Tu parte del trato: {impulso}. Eres uno de {n_infectados}. Defiéndete en el debate.",
+        "Tu lealtad cambió de dueño. Nadie en {lugar} sabe lo que eres y tu trato exige {impulso}. No dejes que te descubran."
+      ],
+      "variantes_con_aliados": [
+        "No estás solo: {aliados} también aceptaron el trato. Son {n_infectados} contra toda la tripulación. Coordinen su versión en el debate y no se delaten.",
+        "Un gesto en cubierta bastó para reconocerse: {aliados} y tú. Comparten el trato de {impulso}. De día, marineros; de noche, conspiradores."
+      ]
+    }
+  },
+  "eventos": {
+    "eliminado_votacion": [
+      "{nombre} fue encerrado en la bodega por decisión de la tripulación.",
+      "La tripulación decidió dejar a {nombre} encadenado hasta nuevo aviso."
+    ],
+    "sin_eliminado": [
+      "Empate o sin votos: nadie fue encerrado."
+    ],
+    "amanecer_victima": [
+      "{nombre} no despertó esta mañana.",
+      "Encontraron a {nombre} sin vida en cubierta.",
+      "La litera de {nombre} amaneció vacía. Ya no está entre ustedes."
+    ],
+    "amanecer_sin_victima": [
+      "Amaneció y todos siguen a bordo.",
+      "La guardia pasó en calma: nadie falta en {lugar}."
+    ],
+    "victoria_sanos": [
+      "Los amotinados fueron descubiertos. {lugar} retoma su rumbo… por ahora.",
+      "Sin traidores a bordo, {lugar} puede seguir navegando."
+    ],
+    "victoria_infectados": [
+      "Los amotinados ya son tantos como los leales. {lugar} cambió de capitán.",
+      "Ya no queda quién los frene: {lugar} cayó en manos de los amotinados."
+    ]
+  }
+}
