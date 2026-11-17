@@ -1,6 +1,7 @@
 (function () {
   const PHASE_LABEL = {
     LOBBY: 'Esperando jugadores',
+    GUIDE: 'Cómo se juega',
     ROLE_REVEAL: 'Revisen su rol en el celular',
     DEBATE: 'Debate',
     VOTE: 'Votación',
@@ -18,7 +19,9 @@
   // Nombres de rol por defecto (los del tema "infectados"). El tema activo los reemplaza.
   const DEFAULT_ROLE_NAMES = {
     gnosia: 'Infectado', engineer: 'Ingeniero', guardian: 'Oficial de Bioseguridad', doctor: 'Doctor', crew: 'Tripulante',
+    vigia: 'Personal de a bordo',
   };
+  const DEFAULT_HINT = { vigia: 'Todos saben que eres de fiar. Ayuda a encontrar al bando oculto.' };
   const ROLE = {};
   for (const k of Object.keys(DEFAULT_ROLE_NAMES)) ROLE[k] = { name: DEFAULT_ROLE_NAMES[k], hint: '' };
 
@@ -83,7 +86,7 @@
     const names = state.roleNames || DEFAULT_ROLE_NAMES;
     for (const k of Object.keys(ROLE)) {
       if (names[k]) ROLE[k].name = names[k];
-      ROLE[k].hint = (UI.pista_rol && UI.pista_rol[k]) || '';
+      ROLE[k].hint = (UI.pista_rol && UI.pista_rol[k]) || DEFAULT_HINT[k] || '';
     }
     const root = document.documentElement.style;
     const c = UI.colores && UI.colores.malo;
@@ -117,7 +120,7 @@
     }
     if (r.kind === 'dawn') return [r.text || (r.victim ? tpl(UI.amanecer_victima_fallback, { nombre: r.victim }) : UI.amanecer_sin_victima_fallback)];
     if (r.kind === 'end') {
-      const lines = [UI.victoria[r.winner === 'humans' ? 'humans' : 'gnosia']];
+      const lines = [r.winner ? UI.victoria[r.winner === 'humans' ? 'humans' : 'gnosia'] : 'La partida fue terminada por el anfitrión.'];
       if (r.text) lines.push(r.text);
       return lines.concat(r.roles.map((x) => x.name + ': ' + ROLE[x.role].name + (x.alive ? '' : UI.estado_eliminado)));
     }
