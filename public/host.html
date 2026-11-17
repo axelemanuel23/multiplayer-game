@@ -27,8 +27,13 @@
         <label for="theme">Ambientación</label>
         <select id="theme"></select>
       </div>
+      <div class="theme-pick">
+        <label for="mode">Modo de partida</label>
+        <select id="mode"></select>
+      </div>
       <div class="actions">
         <button id="start" class="primary" disabled>Iniciar partida</button>
+        <button id="close-lobby">Cerrar sala</button>
         <p id="msg" class="error" role="alert"></p>
       </div>
     </section>
@@ -40,12 +45,16 @@
       <p id="story" class="story"></p>
       <p id="hint" class="mute big"></p>
       <p id="comp" class="mute big"></p>
+      <p id="vigias" class="mute big"></p>
+      <div id="guide" class="result"></div>
       <div id="result" class="result"></div>
       <ul id="roster-game" class="roster"></ul>
       <div class="actions">
         <button id="pause">Pausar</button>
         <button id="skip">Saltar fase</button>
+        <button id="end">Terminar partida</button>
         <button id="reset" class="primary" hidden>Nueva partida</button>
+        <button id="close">Cerrar sala</button>
       </div>
     </section>
   </main>
@@ -69,6 +78,8 @@
           $('#qr').innerHTML = m.qr; // SVG generado por nuestro servidor
         } else if (m.t === 'state') {
           state = m; Gnosia.syncClock(m); render();
+        } else if (m.t === 'room:closed') {
+          localStorage.removeItem(KEY); api.send({ t: 'host:create' }); // sala cerrada: se abre una nueva
         } else if (m.t === 'error') {
           if (m.code === 'ROOM_NOT_FOUND') { localStorage.removeItem(KEY); api.send({ t: 'host:create' }); }
           else $('#msg').textContent = m.message;
@@ -80,6 +91,11 @@
     $('#skip').addEventListener('click', () => api.send({ t: 'host:skip' }));
     $('#reset').addEventListener('click', () => api.send({ t: 'host:reset' }));
     $('#theme').addEventListener('change', (e) => api.send({ t: 'host:theme', theme: e.target.value }));
+    $('#mode').addEventListener('change', (e) => api.send({ t: 'host:mode', mode: e.target.value }));
+    const closeRoom = () => { if (confirm('¿Cerrar la sala? Se desconectará a todos los jugadores y se abrirá una sala nueva.')) api.send({ t: 'host:close' }); };
+    $('#close').addEventListener('click', closeRoom);
+    $('#close-lobby').addEventListener('click', closeRoom);
+    $('#end').addEventListener('click', () => { if (confirm('¿Terminar la partida ahora? Se revelarán todos los roles.')) api.send({ t: 'host:end' }); });
     $('#start').addEventListener('click', () => { $('#msg').textContent = ''; api.send({ t: 'host:start' }); });
 
     function render() {
@@ -96,6 +112,10 @@
           sel.replaceChildren(new Option('Aleatoria', 'random'), ...themes.map((t) => new Option(t.titulo, t.id)));
         }
         sel.value = state.themeChoice || 'random';
+        const msel = $('#mode');
+        const modes = state.modes || [];
+        if (msel.options.length !== modes.length) msel.replaceChildren(...modes.map((m) => new Option(m.titulo, m.id)));
+        msel.value = state.mode || 'estandar';
         $('#start').disabled = n < state.min;
         if (n < state.min) $('#msg').textContent = 'Faltan ' + (state.min - n) + ' jugadores como mínimo.';
         else $('#msg').textContent = '';
@@ -107,6 +127,9 @@
         $('#hint').textContent = state.paused ? '' : (prog || Gnosia.PHASE_HINT[state.phase] || '');
         Gnosia.renderResult($('#result'), state.result);
         $('#story').textContent = state.story || '';
+        $('#guide').replaceChildren(...(state.guide || []).map((t) => { const p = document.createElement('p'); p.textContent = t; return p; }));
+        const vig = (state.vigias || []).map((id) => (state.players.find((p) => p.id === id) || {}).name).filter(Boolean);
+        $('#vigias').textContent = vig.length ? Gnosia.ROLE.vigia.name + ' (todos lo saben): ' + vig.join(', ') : '';
         $('#comp').textContent = state.composition
           ? Gnosia.ui().lugar_etiqueta + ': ' + Object.entries(state.composition).filter(([, n]) => n > 0).map(([r, n]) => Gnosia.ROLE[r].name + ' ×' + n).join(' · ') : '';
         $('#skip').hidden = over;
@@ -115,6 +138,7 @@
         $('#pause').textContent = state.paused ? 'Reanudar' : 'Pausar';
         $('#pausebar').hidden = !state.paused;
         $('#reset').hidden = !over;
+        $('#end').hidden = over;
       }
       tick();
     }
