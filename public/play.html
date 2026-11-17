@@ -40,6 +40,7 @@
       <div id="result" class="result"></div>
       <button id="rolecard" class="rolecard" aria-live="polite"></button>
       <p id="comp" class="mute"></p>
+      <p id="vigias" class="mute"></p>
       <ul id="roster-game" class="roster"></ul>
     </section>
 
@@ -85,7 +86,7 @@
         } else if (m.t === 'ally:intents') {
           intents = m; renderAction();
         } else if (m.t === 'error') {
-          if (m.code === 'SESSION_LOST') { localStorage.removeItem(KEY); session = null; state = null; render(); }
+          if (m.code === 'SESSION_LOST' || m.code === 'ROOM_CLOSED') { localStorage.removeItem(KEY); session = null; state = null; render(); if (m.code === 'ROOM_CLOSED') $('#join-err').textContent = m.message; }
           else if (state && session && state.phase !== 'LOBBY') { notice = m.message; renderAction(); }
           else $('#join-err').textContent = m.message;
         }
@@ -116,6 +117,8 @@
         Gnosia.renderRoster($('#roster-game'), state.players, session.playerId);
         $('#comp').textContent = state.composition
           ? Gnosia.ui().lugar_etiqueta + ': ' + Object.entries(state.composition).filter(([, n]) => n > 0).map(([r, n]) => Gnosia.ROLE[r].name + ' ×' + n).join(' · ') : '';
+        const vig = (state.vigias || []).map((id) => (state.players.find((x) => x.id === id) || {}).name).filter(Boolean);
+        $('#vigias').textContent = vig.length ? Gnosia.ROLE.vigia.name + ' (todos lo saben): ' + vig.join(', ') : '';
         renderRole(false);
         Gnosia.renderResult($('#result'), state.result);
         renderAction();
@@ -140,6 +143,7 @@
       const me = state && session && state.players.find((p) => p.id === session.playerId);
       if (!me) return;
       if (state.paused) return add('p', 'mute', 'Esperen a que el anfitrión reanude la partida.');
+      if (state.phase === 'GUIDE') return add('p', 'mute', 'Sigan la guía en la pantalla común.');
       if (!me.alive && state.phase !== 'GAME_OVER' && state.phase !== 'LOBBY') return add('p', 'mute', Gnosia.ui().observador);
       if (state.phase === 'VOTE') renderVote(box, add, me);
       else if (state.phase === 'NIGHT' && night) renderNight(box, add, me);
@@ -181,7 +185,7 @@
       }
 
       if (view === 'role') {
-        add('h2', '', Gnosia.ui().pregunta_noche[night.role]);
+        add('h2', '', (Gnosia.ui().pregunta_noche[night.role] || Gnosia.ui().pregunta_noche.crew));
         if (night.role !== 'gnosia' && nightDone) {
           const rep = reports.filter((x) => x.night === night.night && ['investigate', 'examine', 'protect'].includes(x.kind)).pop();
           if (rep && rep.kind === 'protect') add('p', 'verdict', Gnosia.tpl(Gnosia.ui().proteger_confirmacion, { nombre: rep.name }));
